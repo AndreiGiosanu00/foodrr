@@ -33,14 +33,12 @@ class LoginScreen extends Component {
                 // Sign in with credential from the Google user.
                 firebase.auth().signInWithCredential(credential).then( result => {
                   console.log('User signed in!');
-                  firebase.database().ref('/users/' + result.user.uid).set({
-                      email: result.user.email,
-                      profile_picture: result.additionalUserInfo.profile.picture,
-                      locale: result.additionalUserInfo.profile.locale,
-                      first_name: result.additionalUserInfo.profile.given_name,
-                      last_name: result.additionalUserInfo.profile.family_name
+                  firebase.database().ref('/users/' + result.uid).set({
+                      email: result.email,
+                      profilePicture: result.photoURL,
+                      displayName: result.displayName
                   }).then(snapshot => {
-                     // console.log('Snapshot', snapshot);
+                     console.log('Snapshot', snapshot);
                   });
                 }).catch((error) => {
                     // Handle Errors here.
@@ -51,6 +49,8 @@ class LoginScreen extends Component {
                     // The firebase.auth.AuthCredential type that was used.
                     var credential = error.credential;
                     // ...
+
+                    console.log(errorMessage);
                 });
             } else {
                 console.log('User already signed-in Firebase.');
