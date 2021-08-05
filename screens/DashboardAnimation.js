@@ -1,6 +1,5 @@
 import React, {Component} from "react";
-import {View, Text, StyleSheet, Button, ImageBackground} from "react-native";
-import firebase from "firebase";
+import {View, StyleSheet, ImageBackground} from "react-native";
 import LottieView from "lottie-react-native";
 
 class DashboardAnimation extends Component {
