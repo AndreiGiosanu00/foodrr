@@ -5,14 +5,51 @@ import {createAppContainer, createSwitchNavigator} from 'react-navigation';
 import LoadingScreen from './screens/LoadingScreen';
 import LoginScreen from './screens/LoginScreen';
 import DashboardScreen from './screens/DashboardScreen';
+import { Asset } from "expo-asset";
+import AppLoading from 'expo-app-loading';
 
 import firebase from "firebase";
 import {firebaseConfig} from "./config";
 
+function cacheImages(images) {
+  return images.map(image => {
+    if (typeof image === 'string') {
+      return Image.prefetch(image);
+    } else {
+      return Asset.fromModule(image).downloadAsync();
+    }
+  });
+}
+
 firebase.initializeApp(firebaseConfig);
 
 export default class App extends React.Component {
+
+  constructor() {
+    super();
+    this.state = {
+      isReady: false
+    };
+  }
+
+  async _loadAssetsAsync() {
+    const imageAssets = cacheImages([
+      require('./assets/login-background.jpg'),
+    ]);
+
+    await Promise.all([...imageAssets]);
+  }
+
   render() {
+    if (!this.state.isReady) {
+      return (
+          <AppLoading
+              startAsync={this._loadAssetsAsync}
+              onFinish={() => this.setState({ isReady: true })}
+              onError={console.warn}
+          />
+      );
+    }
     return <AppNavigator />;
   }
 }

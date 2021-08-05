@@ -1,7 +1,9 @@
 import React, {Component} from "react";
-import {View, Text, StyleSheet, Button} from "react-native";
+import {View, Text, StyleSheet, Button, Image, Dimensions} from "react-native";
 import * as Google from 'expo-google-app-auth';
 import firebase from "firebase";
+
+const {width, height} = Dimensions.get('window');
 
 class LoginScreen extends Component {
 
@@ -38,7 +40,7 @@ class LoginScreen extends Component {
                       profilePicture: result.photoURL,
                       displayName: result.displayName
                   }).then(snapshot => {
-                     console.log('Snapshot', snapshot);
+                     // console.log('Snapshot', snapshot);
                   });
                 }).catch((error) => {
                     // Handle Errors here.
@@ -80,11 +82,25 @@ class LoginScreen extends Component {
 
     render() {
         return (
-            <View style={styles.container}>
-                <Button
-                    title="Sign in with Google"
-                    onPress={() => this.signInWithGoogleAsync()}
-                />
+            <View style={{
+                flex: 1,
+                backgroundColor: 'white',
+                justifyContent: 'flex-end'
+            }}>
+                <View style={{...StyleSheet.absoluteFill}}>
+                    <Image
+                        source={require('../assets/login-background.jpg')}
+                        style={{flex: 1, height: null, width: null}}
+                    />
+                </View>
+                <View style={{height: height / 3, alignItems: 'center'}}>
+                    <View style={styles.button}>
+                        <Text style={{fontSize: 20, fontWeight: 'bold'}}>Sign In</Text>
+                    </View>
+                    <View style={{...styles.button, backgroundColor: '#4285F4'}}>
+                        <Text style={{fontSize: 20, fontWeight: 'bold', color: 'white'}} onPress={() => this.signInWithGoogleAsync()}>Sign in with Google</Text>
+                    </View>
+                </View>
             </View>
         )
     }
@@ -99,4 +115,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    button: {
+        backgroundColor: '#fff',
+        height: 70,
+        width: 350,
+        marginHorizontal: 20,
+        marginVertical: 5,
+        borderRadius: 35,
+        paddingLeft: 5,
+        paddingRight: 5,
+        alignItems: 'center',
+        justifyContent: 'center'
+    }
 });
