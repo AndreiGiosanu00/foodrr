@@ -1,11 +1,61 @@
 import React, {Component} from "react";
-import {View, Text, StyleSheet, Dimensions, TextInput, ImageBackground} from "react-native";
+import {View, Text, StyleSheet, Dimensions, TextInput, ImageBackground, Alert, Button} from "react-native";
 import firebase from "firebase";
 import Animated from "react-native-reanimated";
 
 const {width, height} = Dimensions.get('window');
 
 class RegisterScreen extends Component {
+    constructor() {
+        super();
+        this.state = {
+            displayName: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+        };
+    }
+
+    updateInputVal = (val, prop) => {
+        const state = this.state;
+        state[prop] = val;
+        this.setState(state);
+    };
+
+    registerUser = () => {
+        if (this.state.password !== this.state.confirmPassword) {
+            Alert.alert('The passwords entered are different!')
+        } else {
+            if(this.state.email === '' && this.state.password === '') {
+                Alert.alert('Enter details to signup!')
+            } else {
+                firebase
+                    .auth()
+                    .createUserWithEmailAndPassword(this.state.email, this.state.password)
+                    .then((res) => {
+                        res.user.updateProfile({
+                            displayName: this.state.displayName
+                        });
+                        console.log('User registered successfully!', res);
+                        firebase.database().ref('/users/' + res.user.uid).set({
+                            email: res.user.email,
+                            profilePicture: 'none',
+                            displayName: this.state.displayName
+                        }).then(snapshot => {
+                            // console.log('Snapshot', snapshot);
+                        });
+                        this.setState({
+                            displayName: '',
+                            email: '',
+                            password: ''
+                        });
+                        this.props.navigation.navigate('LoginAnimation');
+                    })
+                    .catch(error => this.setState({ errorMessage: error.message }))
+            }
+        }
+    };
+
     render() {
         return (
             <View style={{...styles.container}}>
@@ -18,24 +68,34 @@ class RegisterScreen extends Component {
                             placeholder="Name"
                             style={styles.textInput}
                             placeholderTextColor="grey"
+                            value={this.state.displayName}
+                            onChangeText={(val) => this.updateInputVal(val, 'displayName')}
                         />
                         <TextInput
                             placeholder="Email"
                             style={styles.textInput}
                             placeholderTextColor="grey"
+                            value={this.state.email}
+                            onChangeText={(val) => this.updateInputVal(val, 'email')}
                         />
                         <TextInput
                             placeholder="Password"
                             style={styles.textInput}
                             placeholderTextColor="grey"
+                            value={this.state.password}
+                            onChangeText={(val) => this.updateInputVal(val, 'password')}
+                            secureTextEntry={true}
                         />
                         <TextInput
                             placeholder="Confirm your password"
                             style={styles.textInput}
                             placeholderTextColor="grey"
+                            value={this.state.confirmPassword}
+                            onChangeText={(val) => this.updateInputVal(val, 'confirmPassword')}
+                            secureTextEntry={true}
                         />
                         <Animated.View style={{...styles.button, marginTop: 15}}>
-                            <Text style={{fontSize: 20, fontWeight: 'bold'}}>Sign Up</Text>
+                            <Button style={{fontSize: 20, fontWeight: 'bold'}} onPress={() => this.registerUser()} title="Sign Up"/>
                         </Animated.View>
                         <Animated.View style={{...styles.loginLink}}>
                             <Text>Do you have an account? <Text style={{color: '#4285F4', fontWeight: 'bold'}} onPress={() => this.props.navigation.navigate('LoginAnimation')}>Login.</Text></Text>

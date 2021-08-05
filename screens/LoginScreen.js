@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {View, Text, StyleSheet, Dimensions, TextInput} from "react-native";
+import {View, Text, StyleSheet, Dimensions, TextInput, Alert} from "react-native";
 import Svg, { Image, Circle, ClipPath } from 'react-native-svg';
 import * as Google from 'expo-google-app-auth';
 import firebase from "firebase";
@@ -63,7 +63,10 @@ function changeLoginForm(param) {
 class LoginScreen extends Component {
     constructor() {
         super();
-
+        this.state = {
+            email: '',
+            password: ''
+        };
         this.buttonOpacity = new Value(1);
         this.onStateChangeLogin = event([
             {
@@ -117,6 +120,32 @@ class LoginScreen extends Component {
             extrapolate:Extrapolate.CLAMP
         });
     }
+
+    updateInputVal = (val, prop) => {
+      const state = this.state;
+      state[prop] = val;
+      this.setState(state);
+    };
+
+    userLogin = () => {
+        if(this.state.email === '' && this.state.password === '') {
+            Alert.alert('Enter details to login!')
+        } else {
+            firebase
+                .auth()
+                .signInWithEmailAndPassword(this.state.email, this.state.password)
+                .then((res) => {
+                    console.log(res);
+                    console.log('User logged-in successfully!');
+                    this.setState({
+                        email: '',
+                        password: ''
+                    });
+                    this.props.navigation.navigate('DashboardAnimation');
+                })
+                .catch(error => this.setState({ errorMessage: error.message }))
+        }
+    };
 
     isUserEqual = (googleUser, firebaseUser) => {
         if (firebaseUser) {
@@ -237,14 +266,19 @@ class LoginScreen extends Component {
                             placeholder="Email"
                             style={styles.textInput}
                             placeholderTextColor="black"
+                            value={this.state.email}
+                            onChangeText={(val) => this.updateInputVal(val, 'email')}
                         />
                         <TextInput
                             placeholder="Password"
                             style={styles.textInput}
                             placeholderTextColor="black"
+                            secureTextEntry={true}
+                            value={this.state.password}
+                            onChangeText={(val) => this.updateInputVal(val, 'password')}
                         />
                         <Animated.View style={styles.button}>
-                            <Text style={{fontSize: 20, fontWeight: 'bold'}}>Login</Text>
+                            <Text style={{fontSize: 20, fontWeight: 'bold'}} onPress={() => this.userLogin()}>Login</Text>
                         </Animated.View>
                     </Animated.View>
                 </View>
