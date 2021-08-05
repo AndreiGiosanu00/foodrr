@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import {createAppContainer, createSwitchNavigator} from 'react-navigation';
 import LoadingScreen from './screens/LoadingScreen';
 import LoginScreen from './screens/LoginScreen';
+import RegisterScreen from './screens/RegisterScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import { Asset } from "expo-asset";
 import AppLoading from 'expo-app-loading';
@@ -57,6 +58,7 @@ export default class App extends React.Component {
 const AppSwitchNavigator = createSwitchNavigator({
   LoadingScreen: LoadingScreen,
   LoginScreen: LoginScreen,
+  RegisterScreen: RegisterScreen,
   DashboardScreen: DashboardScreen
 });
 

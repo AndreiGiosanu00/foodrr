@@ -54,13 +54,18 @@ function runTiming(clock, value, dest) {
     ]);
 }
 
-class LoginScreen extends Component {
+let showSignUpForm = false;
+function changeLoginForm(param) {
+ showSignUpForm = param;
+ console.log('da');
+}
 
+class LoginScreen extends Component {
     constructor() {
         super();
 
         this.buttonOpacity = new Value(1);
-        this.onStateChange = event([
+        this.onStateChangeLogin = event([
             {
                 nativeEvent: ({state}) => block([
                     cond(eq(state, State.END), set(this.buttonOpacity, runTiming(new Clock(), 1, 0)))
@@ -68,7 +73,7 @@ class LoginScreen extends Component {
             }
         ]);
 
-        this.onCloseState = event([
+        this.onCloseStateLogin = event([
             {
                 nativeEvent: ({state}) => block([
                     cond(eq(state, State.END), set(this.buttonOpacity, runTiming(new Clock(), 0, 1)))
@@ -208,19 +213,22 @@ class LoginScreen extends Component {
                     </Svg>
                 </Animated.View>
                 <View style={{height: height / 3, justifyContent: 'center'}}>
-                    <TapGestureHandler onHandlerStateChange={this.onStateChange}>
+                    <TapGestureHandler onHandlerStateChange={this.onStateChangeLogin}>
                         <Animated.View style={{...styles.button, opacity: this.buttonOpacity, transform: [{translateY: this.buttonY}] }}>
-                            <Text style={{fontSize: 20, fontWeight: 'bold'}}>Register</Text>
+                            <Text style={{fontSize: 20, fontWeight: 'bold'}}>Login</Text>
                         </Animated.View>
                     </TapGestureHandler>
                     <Animated.View style={{...styles.button, backgroundColor: '#4285F4', opacity: this.buttonOpacity, transform: [{translateY: this.buttonY}]}}>
                         <Text style={{fontSize: 20, fontWeight: 'bold', color: 'white'}} onPress={() => this.signInWithGoogleAsync()}>Login with Google</Text>
                     </Animated.View>
+                    <Animated.View style={{...styles.signUpLink, opacity: this.buttonOpacity, transform: [{translateY: this.buttonY}]}}>
+                        <Text style={{color: 'white', fontWeight: 'bold'}}>First time here? <Text style={{color: '#4285F4', fontWeight: 'bold'}} onPress={() => this.props.navigation.navigate('RegisterScreen')}>Sign Up.</Text></Text>
+                    </Animated.View>
                     <Animated.View style={{height: height / 3, ...StyleSheet.absoluteFill, top: null,
                         justifyContent: 'center', zIndex: this.textInputZIndex,
                         opacity: this.textInputOpacity, transform: [{translateY: this.textInputY}]}}
                     >
-                        <TapGestureHandler onHandlerStateChange={this.onCloseState}>
+                        <TapGestureHandler onHandlerStateChange={this.onCloseStateLogin}>
                             <Animated.View style={styles.closeButton}>
                                 <Animated.Text style={{fontSize: 15, fontWeight: 'bold', transform: [{rotate: concat(this.rotateCross, 'deg')}]}}>X</Animated.Text>
                             </Animated.View>
@@ -236,7 +244,7 @@ class LoginScreen extends Component {
                             placeholderTextColor="black"
                         />
                         <Animated.View style={styles.button}>
-                            <Text style={{fontSize: 20, fontWeight: 'bold'}}>Sign In</Text>
+                            <Text style={{fontSize: 20, fontWeight: 'bold'}}>Login</Text>
                         </Animated.View>
                     </Animated.View>
                 </View>
@@ -290,5 +298,9 @@ const styles = StyleSheet.create({
         shadowColor: 'black',
         shadowOpacity: 0.2,
         elevation: 3
+    },
+    signUpLink: {
+        alignItems: 'center',
+        justifyContent: 'center'
     }
 });
