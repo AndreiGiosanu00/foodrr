@@ -222,7 +222,7 @@ class LoginScreen extends Component {
                         <Text style={{fontSize: 20, fontWeight: 'bold', color: 'white'}} onPress={() => this.signInWithGoogleAsync()}>Login with Google</Text>
                     </Animated.View>
                     <Animated.View style={{...styles.signUpLink, opacity: this.buttonOpacity, transform: [{translateY: this.buttonY}]}}>
-                        <Text style={{color: 'white', fontWeight: 'bold'}}>First time here? <Text style={{color: '#4285F4', fontWeight: 'bold'}} onPress={() => this.props.navigation.navigate('RegisterScreen')}>Sign Up.</Text></Text>
+                        <Text style={{color: 'white', fontWeight: 'bold'}}>First time here? <Text style={{color: '#4285F4', fontWeight: 'bold'}} onPress={() => this.props.navigation.navigate('RegisterAnimation')}>Sign Up.</Text></Text>
                     </Animated.View>
                     <Animated.View style={{height: height / 3, ...StyleSheet.absoluteFill, top: null,
                         justifyContent: 'center', zIndex: this.textInputZIndex,

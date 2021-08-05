@@ -6,6 +6,9 @@ import LoadingScreen from './screens/LoadingScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import DashboardScreen from './screens/DashboardScreen';
+import DashboardAnimation from './screens/DashboardAnimation';
+import LoginAnimation from './screens/LoginAnimation';
+import RegisterAnimation from './screens/RegisterAnimation';
 import { Asset } from "expo-asset";
 import AppLoading from 'expo-app-loading';
 
@@ -57,8 +60,11 @@ export default class App extends React.Component {
 
 const AppSwitchNavigator = createSwitchNavigator({
   LoadingScreen: LoadingScreen,
+  LoginAnimation: LoginAnimation,
   LoginScreen: LoginScreen,
+  RegisterAnimation: RegisterAnimation,
   RegisterScreen: RegisterScreen,
+  DashboardAnimation: DashboardAnimation,
   DashboardScreen: DashboardScreen
 });
 

@@ -38,7 +38,7 @@ class RegisterScreen extends Component {
                             <Text style={{fontSize: 20, fontWeight: 'bold'}}>Sign Up</Text>
                         </Animated.View>
                         <Animated.View style={{...styles.loginLink}}>
-                            <Text>Do you have an account? <Text style={{color: '#4285F4', fontWeight: 'bold'}} onPress={() => this.props.navigation.navigate('LoginScreen')}>Login.</Text></Text>
+                            <Text>Do you have an account? <Text style={{color: '#4285F4', fontWeight: 'bold'}} onPress={() => this.props.navigation.navigate('LoginAnimation')}>Login.</Text></Text>
                         </Animated.View>
                     </Animated.View>
                 </ImageBackground>
