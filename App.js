@@ -1,6 +1,5 @@
-import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import {createAppContainer, createSwitchNavigator} from 'react-navigation';
 import LoadingScreen from './screens/LoadingScreen';
 import LoginScreen from './screens/LoginScreen';
@@ -9,11 +8,14 @@ import DashboardScreen from './screens/DashboardScreen';
 import DashboardAnimation from './screens/DashboardAnimation';
 import LoginAnimation from './screens/LoginAnimation';
 import RegisterAnimation from './screens/RegisterAnimation';
+import { DrawerContent } from './screens/DrawerContent';
 import { Asset } from "expo-asset";
 import AppLoading from 'expo-app-loading';
 
 import firebase from "firebase";
 import {firebaseConfig} from "./config";
+import {createDrawerNavigator} from "@react-navigation/drawer";
+import {NavigationContainer} from "@react-navigation/native";
 
 function cacheImages(images) {
   return images.map(image => {
@@ -26,6 +28,8 @@ function cacheImages(images) {
 }
 
 firebase.initializeApp(firebaseConfig);
+
+const Drawer = createDrawerNavigator();
 
 export default class App extends React.Component {
 
@@ -54,7 +58,13 @@ export default class App extends React.Component {
           />
       );
     }
-    return <AppNavigator />;
+    return (
+        <NavigationContainer>
+          <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
+            <Drawer.Screen name="Dashboard" component={DashboardScreen}/>
+          </Drawer.Navigator>
+        </NavigationContainer>
+    );
   }
 }
 
