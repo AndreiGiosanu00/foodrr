@@ -1,13 +1,8 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import {createAppContainer, createSwitchNavigator} from 'react-navigation';
+import { StyleSheet, Button } from 'react-native';
 import LoadingScreen from './screens/LoadingScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
-import DashboardScreen from './screens/DashboardScreen';
-import DashboardAnimation from './screens/DashboardAnimation';
-import LoginAnimation from './screens/LoginAnimation';
-import RegisterAnimation from './screens/RegisterAnimation';
 import { DrawerContent } from './screens/DrawerContent';
 import { Asset } from "expo-asset";
 import AppLoading from 'expo-app-loading';
@@ -16,9 +11,9 @@ import firebase from "firebase";
 import {firebaseConfig} from "./config";
 import {createDrawerNavigator} from "@react-navigation/drawer";
 import {NavigationContainer} from "@react-navigation/native";
-import ProfileScreen from "./screens/ProfileScreen";
-import HistoryScreen from "./screens/HistoryScreen";
 import FavoritesScreen from "./screens/FavoritesScreen";
+import BottomTabs from "./screens/BottomTabs";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 function cacheImages(images) {
   return images.map(image => {
@@ -68,16 +63,28 @@ export default class App extends React.Component {
     return (
         <NavigationContainer>
           <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
-            <Drawer.Screen name="LoadingScreen" component={LoadingScreen}/>
-            <Drawer.Screen name="LoginAnimation" component={LoginAnimation}/>
-            <Drawer.Screen name="LoginScreen" component={LoginScreen}/>
-            <Drawer.Screen name="RegisterAnimation" component={RegisterAnimation}/>
-            <Drawer.Screen name="RegisterScreen" component={RegisterScreen}/>
-            <Drawer.Screen name="DashboardAnimation" component={DashboardAnimation}/>
-            <Drawer.Screen name="DashboardScreen" component={DashboardScreen}/>
-            <Drawer.Screen name="ProfileScreen" component={ProfileScreen}/>
-            <Drawer.Screen name="HistoryScreen" component={HistoryScreen}/>
-            <Drawer.Screen name="FavoritesScreen" component={FavoritesScreen}/>
+            <Drawer.Screen name="LoadingScreen" component={LoadingScreen} options={{
+              headerShown: false
+            }}/>
+            <Drawer.Screen name="LoginScreen" component={LoginScreen} options={{
+              headerShown: false
+            }}/>
+            <Drawer.Screen name="RegisterScreen" component={RegisterScreen} options={{
+              headerShown: false
+            }}/>
+            <Drawer.Screen name="BottomTabs" component={BottomTabs} options={{
+              title: 'Foodrr',
+              headerTitleAlign: 'center',
+              headerRight: () => (
+                  <Icon
+                      name="camera"
+                      color="#4285F4"
+                      size={30}
+                      style={{marginRight: 5}}
+                      onPress={() => alert('da')}
+                  />
+              )
+            }}/>
           </Drawer.Navigator>
         </NavigationContainer>
     );

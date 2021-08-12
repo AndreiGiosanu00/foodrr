@@ -61,7 +61,7 @@ export function DrawerContent(props) {
                                 />
                             )}
                             label="Home"
-                            onPress={() => {props.navigation.navigate('DashboardScreen')}}
+                            onPress={() => {props.navigation.navigate('Home')}}
                         />
                         <DrawerItem
                             icon={({color, size}) => (
