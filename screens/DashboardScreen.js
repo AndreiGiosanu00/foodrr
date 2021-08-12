@@ -11,7 +11,7 @@ class DashboardScreen extends Component {
             <View style={styles.container}>
                 <LottieView style={{width: 200, marginVertical: 35}} source={require('../assets/take-a-photo.json')} autoPlay />
                 <View style={{alignItems: 'center'}}>
-                    <Text style={{fontWeight: 'bold', fontSize: 25}}>Welcome to Foodrr app!</Text>
+                    <Text style={{fontWeight: 'bold', fontSize: 25}}>Welcome to Foodrr</Text>
                     <Text>Right now you don't have any food dishes scanned.</Text>
                     <Text>To do that, click the camera icon from top-right corner.</Text>
                 </View>

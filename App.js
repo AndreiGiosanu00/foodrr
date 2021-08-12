@@ -14,6 +14,7 @@ import {NavigationContainer} from "@react-navigation/native";
 import FavoritesScreen from "./screens/FavoritesScreen";
 import BottomTabs from "./screens/BottomTabs";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import CameraScreen from "./screens/CameraScreen";
 
 function cacheImages(images) {
   return images.map(image => {
@@ -72,6 +73,9 @@ export default class App extends React.Component {
             <Drawer.Screen name="RegisterScreen" component={RegisterScreen} options={{
               headerShown: false
             }}/>
+            <Drawer.Screen name="CameraScreen" component={CameraScreen} options={{
+              headerShown: false
+            }}/>
             <Drawer.Screen name="BottomTabs" component={BottomTabs} options={{
               title: 'Foodrr',
               headerTitleAlign: 'center',
@@ -81,7 +85,7 @@ export default class App extends React.Component {
                       color="#4285F4"
                       size={30}
                       style={{marginRight: 5}}
-                      onPress={() => alert('da')}
+                      onPress={() => this.props.navigation.navigate('CameraScreen')}
                   />
               )
             }}/>
