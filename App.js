@@ -16,6 +16,9 @@ import firebase from "firebase";
 import {firebaseConfig} from "./config";
 import {createDrawerNavigator} from "@react-navigation/drawer";
 import {NavigationContainer} from "@react-navigation/native";
+import ProfileScreen from "./screens/ProfileScreen";
+import HistoryScreen from "./screens/HistoryScreen";
+import FavoritesScreen from "./screens/FavoritesScreen";
 
 function cacheImages(images) {
   return images.map(image => {
@@ -72,6 +75,9 @@ export default class App extends React.Component {
             <Drawer.Screen name="RegisterScreen" component={RegisterScreen}/>
             <Drawer.Screen name="DashboardAnimation" component={DashboardAnimation}/>
             <Drawer.Screen name="DashboardScreen" component={DashboardScreen}/>
+            <Drawer.Screen name="ProfileScreen" component={ProfileScreen}/>
+            <Drawer.Screen name="HistoryScreen" component={HistoryScreen}/>
+            <Drawer.Screen name="FavoritesScreen" component={FavoritesScreen}/>
           </Drawer.Navigator>
         </NavigationContainer>
     );
