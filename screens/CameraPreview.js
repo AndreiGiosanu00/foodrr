@@ -70,7 +70,7 @@ export default function CameraPreview({photo, retakePicture, savePhoto}) {
                                     fontSize: 20
                                 }}
                             >
-                                save photo
+                                Analyze
                             </Text>
                         </TouchableOpacity>
                     </View>

@@ -25,16 +25,18 @@ export default function CameraScreen(props) {
         }
     }
     const __takePicture = async () => {
-        const photo = await camera.takePictureAsync()
-        console.log(photo)
+        const photo = await camera.takePictureAsync();
+        console.log(photo);
         setPreviewVisible(true)
         //setStartCamera(false)
         setCapturedImage(photo)
     }
-    const __savePhoto = () => {}
+    const __savePhoto = () => {
+        // here we will send the photo to the analyze API
+    };
     const __retakePicture = () => {
-        setCapturedImage(null)
-        setPreviewVisible(false)
+        setCapturedImage(null);
+        setPreviewVisible(false);
         __startCamera()
     }
     const __handleFlashMode = () => {
