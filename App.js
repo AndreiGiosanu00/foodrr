@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Button } from 'react-native';
+import { StyleSheet } from 'react-native';
 import LoadingScreen from './screens/LoadingScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
@@ -11,7 +11,6 @@ import firebase from "firebase";
 import {firebaseConfig} from "./config";
 import {createDrawerNavigator} from "@react-navigation/drawer";
 import {NavigationContainer} from "@react-navigation/native";
-import FavoritesScreen from "./screens/FavoritesScreen";
 import BottomTabs from "./screens/BottomTabs";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import CameraScreen from "./screens/CameraScreen";
@@ -36,8 +35,8 @@ const Drawer = createDrawerNavigator();
 
 export default class App extends React.Component {
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       isReady: false
     };
@@ -50,6 +49,10 @@ export default class App extends React.Component {
 
     await Promise.all([...imageAssets]);
   }
+
+  navigateTo = (navigation, screen) => {
+    navigation.navigate(screen);
+  };
 
   render() {
     if (!this.state.isReady) {
@@ -76,7 +79,7 @@ export default class App extends React.Component {
             <Drawer.Screen name="CameraScreen" component={CameraScreen} options={{
               headerShown: false
             }}/>
-            <Drawer.Screen name="BottomTabs" component={BottomTabs} options={{
+            <Drawer.Screen name="BottomTabs" component={BottomTabs} options={({navigation}) => ({
               title: 'Foodrr',
               headerTitleAlign: 'center',
               headerRight: () => (
@@ -85,10 +88,10 @@ export default class App extends React.Component {
                       color="#4285F4"
                       size={30}
                       style={{marginRight: 5}}
-                      onPress={() => this.props.navigation.navigate('CameraScreen')}
+                      onPress={() => this.navigateTo(navigation, 'CameraScreen')}
                   />
-              )
-            }}/>
+
+              )})}/>
           </Drawer.Navigator>
         </NavigationContainer>
     );
