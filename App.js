@@ -8,12 +8,12 @@ import { Asset } from "expo-asset";
 import AppLoading from 'expo-app-loading';
 
 import firebase from "firebase";
-import {firebaseConfig} from "./config";
+import {firebaseConfig} from "./config/config";
 import {createDrawerNavigator} from "@react-navigation/drawer";
 import {NavigationContainer} from "@react-navigation/native";
 import BottomTabs from "./screens/BottomTabs";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import CameraScreen from "./screens/CameraScreen";
+import CameraRoll from "./screens/CameraRoll";
 
 function cacheImages(images) {
   return images.map(image => {
@@ -76,7 +76,7 @@ export default class App extends React.Component {
             <Drawer.Screen name="RegisterScreen" component={RegisterScreen} options={{
               headerShown: false
             }}/>
-            <Drawer.Screen name="CameraScreen" component={CameraScreen} options={{
+            <Drawer.Screen name="CameraRoll" component={CameraRoll} options={{
               headerShown: false
             }}/>
             <Drawer.Screen name="BottomTabs" component={BottomTabs} options={({navigation}) => ({
@@ -88,7 +88,7 @@ export default class App extends React.Component {
                       color="#4285F4"
                       size={30}
                       style={{marginRight: 5}}
-                      onPress={() => this.navigateTo(navigation, 'CameraScreen')}
+                      onPress={() => this.navigateTo(navigation, 'CameraRoll')}
                   />
 
               )})}/>
