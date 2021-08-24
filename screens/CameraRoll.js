@@ -62,27 +62,12 @@ export default class CameraRoll extends React.Component {
                             <View style={styles.container}>
                                 <Text>In your image it's a dish that contains {this.state.detectedFood}</Text>
                                 <Text>Nutrients:</Text>
-                                <ScrollView horizontal={true}>
-                                    <View>
-                                        <Table borderStyle={{borderWidth: 1, borderColor: '#C1C0B9', width: 550 }}>
-                                            <Row data={this.state.tableHead} style={styles.header} textStyle={styles.text}/>
-                                        </Table>
-                                        <ScrollView style={styles.dataWrapper}>
-                                            <Table borderStyle={{borderWidth: 1, borderColor: '#C1C0B9', width: 220}}>
-                                                {
-                                                    this.state.tableData.map((rowData, index) => (
-                                                        <Row
-                                                            key={index}
-                                                            data={rowData}
-                                                            style={[styles.row, index%2 && {backgroundColor: '#F7F6E7'}]}
-                                                            textStyle={styles.text}
-                                                        />
-                                                    ))
-                                                }
-                                            </Table>
-                                        </ScrollView>
-                                    </View>
-                                </ScrollView>
+                                <View style={styles.container}>
+                                    <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
+                                        <Row data={this.state.tableHead} style={styles.head} textStyle={styles.text}/>
+                                        <Rows data={this.state.tableData} textStyle={styles.text}/>
+                                    </Table>
+                                </View>
                             </View>
                         )}
                         {this._maybeRenderImage()}
@@ -284,7 +269,7 @@ export default class CameraRoll extends React.Component {
                 });
             }
 
-            let detectedFood = analyzerResponses[0] ? analyzerResponses[0].description : 'hamburger';
+            let detectedFood = analyzerResponses[0] ? analyzerResponses[0].description : 'Hamburger';
 
             // Get nutrients details
             let nutrientsResponse = await fetch(
