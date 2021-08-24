@@ -9,18 +9,23 @@ import {
     StyleSheet,
     Text,
     ScrollView,
-    View
+    View, Dimensions
 } from 'react-native';
+import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
 import uuid from 'react-native-uuid';
 import Environment from '../config/environment';
 import firebase from "firebase";
 import * as ImagePicker from "expo-image-picker";
 
+const {width, height} = Dimensions.get('window');
+
 export default class CameraRoll extends React.Component {
     state = {
         image: null,
         uploading: false,
-        googleResponse: null
+        googleResponse: null,
+        tableHead: ['Nutrient', 'Quantity', 'Unit'],
+        tableData: []
     };
 
     render() {
@@ -52,6 +57,33 @@ export default class CameraRoll extends React.Component {
                                 keyExtractor={this._keyExtractor}
                                 renderItem={({ item }) => <Text>Item: {item.description}</Text>}
                             />
+                        )}
+                        {this.state.nutrientsResponse && (
+                            <View style={styles.container}>
+                                <Text>In your image it's a dish that contains {this.state.detectedFood}</Text>
+                                <Text>Nutrients:</Text>
+                                <ScrollView horizontal={true}>
+                                    <View>
+                                        <Table borderStyle={{borderWidth: 1, borderColor: '#C1C0B9', width: 550 }}>
+                                            <Row data={this.state.tableHead} style={styles.header} textStyle={styles.text}/>
+                                        </Table>
+                                        <ScrollView style={styles.dataWrapper}>
+                                            <Table borderStyle={{borderWidth: 1, borderColor: '#C1C0B9', width: 220}}>
+                                                {
+                                                    this.state.tableData.map((rowData, index) => (
+                                                        <Row
+                                                            key={index}
+                                                            data={rowData}
+                                                            style={[styles.row, index%2 && {backgroundColor: '#F7F6E7'}]}
+                                                            textStyle={styles.text}
+                                                        />
+                                                    ))
+                                                }
+                                            </Table>
+                                        </ScrollView>
+                                    </View>
+                                </ScrollView>
+                            </View>
                         )}
                         {this._maybeRenderImage()}
                         {this._maybeRenderUploadingOverlay()}
@@ -240,21 +272,19 @@ export default class CameraRoll extends React.Component {
             let responseJson = await response.json();
             // console.log(responseJson);
             let analyzerResponses = [];
-            let errorResponses = ['Food', 'Bun', 'Ingredient', 'Staple food', 'Recipe', 'Fast food', 'Baked goods', 'Cuisine'];
+            let errorResponses = ['Food', 'Bun', 'Ingredient', 'Staple food', 'Recipe', 'Fast food', 'Baked goods', 'Cuisine', 'Tableware', 'Sandwich'];
 
             // filter the analyzer response
-            responseJson.responses[0].labelAnnotations.forEach((item) => {
-               if (errorResponses.indexOf(item.description) < 0) {
-                   analyzerResponses.push(item);
-               }
-            });
+            if (responseJson.responses && responseJson.responses[0] && responseJson.responses[0].labelAnnotations ) {
+                responseJson.responses[0].labelAnnotations.forEach((item) => {
+                    if (errorResponses.indexOf(item.description) < 0) {
+                        analyzerResponses.push(item);
+                        console.log('da');
+                    }
+                });
+            }
 
-            this.setState({
-                googleResponse: analyzerResponses,
-                uploading: false
-            });
-
-            let detectedFood = 'hamburger';
+            let detectedFood = analyzerResponses[0] ? analyzerResponses[0].description : 'hamburger';
 
             // Get nutrients details
             let nutrientsResponse = await fetch(
@@ -268,8 +298,23 @@ export default class CameraRoll extends React.Component {
             );
 
             let nutrientsJSON = await nutrientsResponse.json();
-            /*console.log('NUTRIENTS DETAILS!!!');
-            console.log(nutrientsJSON.hits[0].recipe.totalNutrients);*/
+            let nutrientsTableData = [
+                [nutrientsJSON.hits[0].recipe.totalNutrients["CHOCDF"].label, nutrientsJSON.hits[0].recipe.totalNutrients["CHOCDF"].quantity.toFixed(2), nutrientsJSON.hits[0].recipe.totalNutrients["CHOCDF"].unit],
+                [nutrientsJSON.hits[0].recipe.totalNutrients["ENERC_KCAL"].label, nutrientsJSON.hits[0].recipe.totalNutrients["ENERC_KCAL"].quantity.toFixed(2), nutrientsJSON.hits[0].recipe.totalNutrients["ENERC_KCAL"].unit],
+                [nutrientsJSON.hits[0].recipe.totalNutrients["SUGAR"].label, nutrientsJSON.hits[0].recipe.totalNutrients["SUGAR"].quantity.toFixed(2), nutrientsJSON.hits[0].recipe.totalNutrients["SUGAR"].unit],
+                [nutrientsJSON.hits[0].recipe.totalNutrients["FASAT"].label, nutrientsJSON.hits[0].recipe.totalNutrients["FASAT"].quantity.toFixed(2), nutrientsJSON.hits[0].recipe.totalNutrients["FASAT"].unit],
+                [nutrientsJSON.hits[0].recipe.totalNutrients["PROCNT"].label, nutrientsJSON.hits[0].recipe.totalNutrients["PROCNT"].quantity.toFixed(2), nutrientsJSON.hits[0].recipe.totalNutrients["PROCNT"].unit],
+                [nutrientsJSON.hits[0].recipe.totalNutrients["NA"].label, nutrientsJSON.hits[0].recipe.totalNutrients["NA"].quantity.toFixed(2), nutrientsJSON.hits[0].recipe.totalNutrients["NA"].unit],
+            ];
+
+            this.setState({
+                googleResponse: analyzerResponses,
+                nutrientsResponse: nutrientsJSON.hits[0].recipe.totalNutrients,
+                uploading: false,
+                tableHead: ['Nutrient', 'Quantity', 'Unit'],
+                tableData: nutrientsTableData,
+                detectedFood: detectedFood
+            });
 
         } catch (error) {
             console.log(error);
@@ -336,5 +381,10 @@ const styles = StyleSheet.create({
     helpContainer: {
         marginTop: 15,
         alignItems: 'center'
-    }
+    },
+
+    header: { height: 50, backgroundColor: '#537791' },
+    text: { textAlign: 'center', fontWeight: '100' },
+    dataWrapper: { marginTop: -1 },
+    row: { height: 40, backgroundColor: '#E7E6E1' }
 });
