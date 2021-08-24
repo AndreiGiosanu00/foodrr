@@ -16,10 +16,29 @@ import uuid from 'react-native-uuid';
 import Environment from '../config/environment';
 import firebase from "firebase";
 import * as ImagePicker from "expo-image-picker";
-
-const {width, height} = Dimensions.get('window');
+import * as Location from 'expo-location';
 
 export default class CameraRoll extends React.Component {
+    latitude = 0;
+    longitude = 0;
+
+    constructor() {
+        super();
+        this.getCurrentLocation();
+    }
+
+    async getCurrentLocation() {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Permission to access location was denied');
+            return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        this.latitude = location.coords.latitude;
+        this.longitude = location.coords.longitude;
+    }
+
     state = {
         image: null,
         uploading: false,
@@ -64,6 +83,7 @@ export default class CameraRoll extends React.Component {
                         )}
                         {this._maybeRenderImage()}
                         {this._maybeRenderUploadingOverlay()}
+                        {this._maybeRenderRestaurantsInYourArea()}
                     </View>
                 </ScrollView>
             </View>
@@ -137,23 +157,33 @@ export default class CameraRoll extends React.Component {
         );
     };
 
-    _keyExtractor = (item, index) => item.id;
-
-    _renderItem = item => {
-        <Text>response: {JSON.stringify(item)}</Text>;
-    };
-
-    _share = () => {
-        Share.share({
-            message: JSON.stringify(this.state.googleResponse.responses),
-            title: 'Check it out',
-            url: this.state.image
-        });
-    };
-
-    _copyToClipboard = () => {
-        Clipboard.setString(this.state.image);
-        alert('Copied to clipboard');
+    _maybeRenderRestaurantsInYourArea = () => {
+        setTimeout(() => {
+            if (!this.state.nutrientsResponse) {
+                let restaurantsInMyArea = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + this.latitude + ',' + this.longitude +
+                    '&radius=2500&type=burger&keyword=cruise&key=AIzaSyDlbePn-1ooGqbMQdNb-2YQlv1JplGbxI4';
+                fetch(restaurantsInMyArea)
+                    .then((response) => response.json())
+                    .then((JsonResponse) => {
+                        console.log(JsonResponse);
+                        return (
+                            <View style={styles.restaurantsView}>
+                                <Text>Restaurants in your area that server this dish:</Text>
+                                <View style={styles.restaurantContainer}>
+                                    <Image source={{uri: './assets/foodrr-logo.png'}} style={styles.restaurantImage}/>
+                                    <Text>Imperial Grill & Music</Text>
+                                    <Text>Pasta Carbonara</Text>
+                                    <Button title={'Go to restaurant'}/>
+                                    <Text>{{JsonResponse}}</Text>
+                                </View>
+                            </View>
+                        );
+                    })
+                    .catch((error) => {
+                        alert('Something went wrong! Please try again.')
+                    });
+            }
+        }, 1000);
     };
 
     _takePhoto = async () => {
@@ -183,7 +213,6 @@ export default class CameraRoll extends React.Component {
                 this.setState({ image: uploadUrl });
             }
         } catch (e) {
-            console.log(e);
             alert('Upload failed, sorry :(');
         } finally {
             this.setState({ uploading: false });
@@ -346,5 +375,18 @@ const styles = StyleSheet.create({
     header: { height: 50, backgroundColor: '#537791' },
     text: { textAlign: 'center', fontWeight: '100' },
     dataWrapper: { marginTop: -1 },
-    row: { height: 40, backgroundColor: '#E7E6E1' }
+    row: { height: 40, backgroundColor: '#E7E6E1' },
+
+    restaurantsView: {
+        marginTop: 15,
+        marginBottom: 15
+    },
+
+    restaurantContainer: {
+
+    },
+
+    restaurantImage: {
+
+    }
 });
