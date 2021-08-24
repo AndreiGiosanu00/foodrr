@@ -21,13 +21,25 @@ import * as Location from 'expo-location';
 export default class CameraRoll extends React.Component {
     latitude = 0;
     longitude = 0;
+    restaurantsInYourArea = [];
+
+    //TODO Nu merge sa afisezi datele despre restaurantele din zona
 
     constructor() {
         super();
-        this.getCurrentLocation();
+        this.state = {
+            image: null,
+            uploading: false,
+            googleResponse: null,
+            tableHead: ['Nutrient', 'Quantity', 'Unit'],
+            tableData: [],
+            loading: false
+        };
+        this.getCurrentLocationAndRestaurantsInYourArea();
     }
 
-    async getCurrentLocation() {
+    async getCurrentLocationAndRestaurantsInYourArea() {
+        this.state.loading = true;
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
             alert('Permission to access location was denied');
@@ -37,18 +49,33 @@ export default class CameraRoll extends React.Component {
         let location = await Location.getCurrentPositionAsync({});
         this.latitude = location.coords.latitude;
         this.longitude = location.coords.longitude;
-    }
 
-    state = {
-        image: null,
-        uploading: false,
-        googleResponse: null,
-        tableHead: ['Nutrient', 'Quantity', 'Unit'],
-        tableData: []
-    };
+        let restaurantsInMyArea = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + this.latitude + ',' + this.longitude +
+            '&radius=2500&type=restaurant&keyword=burger&key=AIzaSyDlbePn-1ooGqbMQdNb-2YQlv1JplGbxI4';
+        fetch(restaurantsInMyArea)
+            .then((response) => response.json())
+            .then((JsonResponse) => {
+                JsonResponse.results.forEach(restaurant => {
+                    this.restaurantsInYourArea.push({
+                        name: restaurant.name,
+                        icon: restaurant.icon,
+                        location: restaurant.geometry.location
+                    });
+                });
+                this.state.loading = false;
+            })
+            .catch((error) => {
+                alert('Something went wrong! Please try again.')
+            });
+        this.state.loading = false;
+    }
 
     render() {
         let { image } = this.state;
+
+        if (this.state.loading) {
+            return <View><Text>Loading...</Text></View>;
+        }
 
         return (
             <View style={styles.container}>
@@ -83,7 +110,15 @@ export default class CameraRoll extends React.Component {
                         )}
                         {this._maybeRenderImage()}
                         {this._maybeRenderUploadingOverlay()}
-                        {this._maybeRenderRestaurantsInYourArea()}
+                        <View style={styles.restaurantsView}>
+                            <Text>Restaurants in your area that server this dish:</Text>
+                            <View style={styles.restaurantContainer}>
+                                <Image source={{uri: './assets/foodrr-logo.png'}} style={styles.restaurantImage}/>
+                                <Text>Imperial Grill & Music</Text>
+                                <Text>Pasta Carbonara</Text>
+                                <Button title={'Go to restaurant'}/>
+                            </View>
+                        </View>
                     </View>
                 </ScrollView>
             </View>
@@ -155,35 +190,6 @@ export default class CameraRoll extends React.Component {
                 </View>
             </View>
         );
-    };
-
-    _maybeRenderRestaurantsInYourArea = () => {
-        setTimeout(() => {
-            if (!this.state.nutrientsResponse) {
-                let restaurantsInMyArea = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + this.latitude + ',' + this.longitude +
-                    '&radius=2500&type=burger&keyword=cruise&key=AIzaSyDlbePn-1ooGqbMQdNb-2YQlv1JplGbxI4';
-                fetch(restaurantsInMyArea)
-                    .then((response) => response.json())
-                    .then((JsonResponse) => {
-                        console.log(JsonResponse);
-                        return (
-                            <View style={styles.restaurantsView}>
-                                <Text>Restaurants in your area that server this dish:</Text>
-                                <View style={styles.restaurantContainer}>
-                                    <Image source={{uri: './assets/foodrr-logo.png'}} style={styles.restaurantImage}/>
-                                    <Text>Imperial Grill & Music</Text>
-                                    <Text>Pasta Carbonara</Text>
-                                    <Button title={'Go to restaurant'}/>
-                                    <Text>{{JsonResponse}}</Text>
-                                </View>
-                            </View>
-                        );
-                    })
-                    .catch((error) => {
-                        alert('Something went wrong! Please try again.')
-                    });
-            }
-        }, 1000);
     };
 
     _takePhoto = async () => {
