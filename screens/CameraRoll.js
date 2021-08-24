@@ -47,7 +47,7 @@ export default class CameraRoll extends React.Component {
                         <Button onPress={this._takePhoto} title="Take a photo" />
                         {this.state.googleResponse && (
                             <FlatList
-                                data={this.state.googleResponse.responses[0].labelAnnotations}
+                                data={this.state.googleResponse}
                                 extraData={this.state}
                                 keyExtractor={this._keyExtractor}
                                 renderItem={({ item }) => <Text>Item: {item.description}</Text>}
@@ -239,8 +239,18 @@ export default class CameraRoll extends React.Component {
             );
             let responseJson = await response.json();
             // console.log(responseJson);
+            let analyzerResponses = [];
+            let errorResponses = ['Food', 'Bun', 'Ingredient', 'Staple food', 'Recipe', 'Fast food', 'Baked goods', 'Cuisine'];
+
+            // filter the analyzer response
+            responseJson.responses[0].labelAnnotations.forEach((item) => {
+               if (errorResponses.indexOf(item.description) < 0) {
+                   analyzerResponses.push(item);
+               }
+            });
+
             this.setState({
-                googleResponse: responseJson,
+                googleResponse: analyzerResponses,
                 uploading: false
             });
 
@@ -258,8 +268,8 @@ export default class CameraRoll extends React.Component {
             );
 
             let nutrientsJSON = await nutrientsResponse.json();
-            console.log('NUTRIENTS DETAILS!!!');
-            console.log(nutrientsJSON.hits[0].recipe.totalNutrients);
+            /*console.log('NUTRIENTS DETAILS!!!');
+            console.log(nutrientsJSON.hits[0].recipe.totalNutrients);*/
 
         } catch (error) {
             console.log(error);
