@@ -50,14 +50,6 @@ export default class CameraRoll extends React.Component {
                         />
 
                         <Button onPress={this._takePhoto} title="Take a photo" />
-                        {this.state.googleResponse && (
-                            <FlatList
-                                data={this.state.googleResponse}
-                                extraData={this.state}
-                                keyExtractor={this._keyExtractor}
-                                renderItem={({ item }) => <Text>Item: {item.description}</Text>}
-                            />
-                        )}
                         {this.state.nutrientsResponse && (
                             <View style={styles.container}>
                                 <Text>In your image it's a dish that contains {this.state.detectedFood}</Text>
@@ -141,23 +133,6 @@ export default class CameraRoll extends React.Component {
                 >
                     <Image source={{ uri: image }} style={{ width: 250, height: 250 }} />
                 </View>
-                <Text
-                    onPress={this._copyToClipboard}
-                    onLongPress={this._share}
-                    style={{ paddingVertical: 10, paddingHorizontal: 10 }}
-                />
-
-                <Text>Raw JSON:</Text>
-
-                {googleResponse && (
-                    <Text
-                        onPress={this._copyToClipboard}
-                        onLongPress={this._share}
-                        style={{ paddingVertical: 10, paddingHorizontal: 10 }}
-                    >
-                        JSON.stringify(googleResponse.responses)}
-                    </Text>
-                )}
             </View>
         );
     };
