@@ -108,7 +108,7 @@ export default class CameraRoll extends React.Component {
                 <Button
                     style={{ marginBottom: 10 }}
                     onPress={() => this.submitToGoogle()}
-                    title="Analyze!"
+                    title="Analyze your image!"
                 />
 
                 <View
@@ -238,11 +238,29 @@ export default class CameraRoll extends React.Component {
                 }
             );
             let responseJson = await response.json();
-            console.log(responseJson);
+            // console.log(responseJson);
             this.setState({
                 googleResponse: responseJson,
                 uploading: false
             });
+
+            let detectedFood = 'hamburger';
+
+            // Get nutrients details
+            let nutrientsResponse = await fetch(
+                'https://api.edamam.com/api/recipes/v2?app_id=8ea76b8a&app_key=d1e291d291d34d9d2eb4b26fddd3cbc1&type=public&q=' + detectedFood,
+                {
+                    headers: {
+                        "Accept-Encoding": 'gzip'
+                    },
+                    method: 'GET'
+                }
+            );
+
+            let nutrientsJSON = await nutrientsResponse.json();
+            console.log('NUTRIENTS DETAILS!!!');
+            console.log(nutrientsJSON.hits[0].recipe.totalNutrients);
+
         } catch (error) {
             console.log(error);
         }
