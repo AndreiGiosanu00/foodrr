@@ -119,6 +119,7 @@ export default class CameraRoll extends React.Component {
                         )}
                         {this._maybeRenderImage()}
                         {this._maybeRenderUploadingOverlay()}
+                        {this._maybeRenderRecommendationFoodAndDrinks()}
                         {this._maybeRenderRestaurantsList()}
                     </View>
                 </ScrollView>
@@ -127,8 +128,8 @@ export default class CameraRoll extends React.Component {
     }
 
     _maybeRenderRestaurantsList = () => {
-      if (this.state.nutrientsResponse)  {
-         this.state.restaurantsListView = [];
+      if (this.state.nutrientsResponse) {
+          this.state.restaurantsListView = [];
           this.restaurantsInYourArea.forEach(restaurant => {
               this.state.restaurantsListView.push(
                   <View style={styles.restaurantContainer}>
@@ -136,7 +137,8 @@ export default class CameraRoll extends React.Component {
                       <Text>{restaurant.name}</Text>
                       <Text>Location: {restaurant.vicinity}</Text>
                       <Text>{this.getDistanceFromLatLonInKm(this.latitude, this.longitude, restaurant.location.lat, restaurant.location.lng).toFixed(2)}km</Text>
-                      <Button title={'Go to restaurant'} onPress={() => Linking.openURL('google.navigation:q=' + restaurant.vicinity)}/>
+                      <Button title={'Go to restaurant'}
+                              onPress={() => Linking.openURL('google.navigation:q=' + restaurant.vicinity)}/>
                   </View>
               );
           });
@@ -147,8 +149,19 @@ export default class CameraRoll extends React.Component {
               </View>
           );
       }
+    };
 
-      return;
+    _maybeRenderRecommendationFoodAndDrinks = () => {
+        let drinksToRecommend = ['White Wine', 'Red Wine', 'Water', 'Roze Wine', 'Coke', 'Sprite', 'Coffee', 'Latte'];
+        let foodsToRecommend = ['Salad', 'Focaccia', 'Potatoes', 'Rice', 'Black Rice', 'Bread', 'Smashed Potatoes', 'Cheese'];
+        if (this.state.nutrientsResponse)  {
+            return (
+                <View>
+                    <Text>With this dish a {drinksToRecommend[Math.floor(Math.random() * drinksToRecommend.length)]} will be a great choice.</Text>
+                    <Text>Also, you can try some {foodsToRecommend[Math.floor(Math.random() * foodsToRecommend.length)]} on the side.</Text>
+                </View>
+            );
+        }
     };
 
     _maybeRenderUploadingOverlay = () => {
