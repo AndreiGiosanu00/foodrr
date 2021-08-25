@@ -24,8 +24,8 @@ export default class CameraRoll extends React.Component {
     longitude = 0;
     restaurantsInYourArea = [];
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             image: null,
             uploading: false,
@@ -92,6 +92,9 @@ export default class CameraRoll extends React.Component {
                     style={styles.container}
                     contentContainerStyle={styles.contentContainer}
                 >
+                    <Button title={'Go back'} onPress={() => {
+                        this.props.navigation.navigate('BottomTabs');
+                    }} style={{marginTop: 150}}/>
                     <View style={styles.getStartedContainer}>
                         {image ? null : (
                             <Text style={styles.getStartedText}>Foodrr</Text>
@@ -152,7 +155,7 @@ export default class CameraRoll extends React.Component {
     };
 
     _maybeRenderRecommendationFoodAndDrinks = () => {
-        let drinksToRecommend = ['White Wine', 'Red Wine', 'Water', 'Roze Wine', 'Coke', 'Sprite', 'Coffee', 'Latte'];
+        let drinksToRecommend = ['White Wine', 'Red Wine', 'Water', 'Roze Wine', 'Coke', 'Sprite', 'Coffee', 'Latte', 'Beer'];
         let foodsToRecommend = ['Salad', 'Focaccia', 'Potatoes', 'Rice', 'Black Rice', 'Bread', 'Smashed Potatoes', 'Cheese'];
         if (this.state.nutrientsResponse)  {
             return (
