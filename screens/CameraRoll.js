@@ -9,7 +9,8 @@ import {
     StyleSheet,
     Text,
     ScrollView,
-    View, Dimensions
+    View, Dimensions,
+    Linking
 } from 'react-native';
 import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
 import uuid from 'react-native-uuid';
@@ -53,11 +54,18 @@ export default class CameraRoll extends React.Component {
         fetch(restaurantsInMyArea)
             .then((response) => response.json())
             .then((JsonResponse) => {
+                let i = 0;
+                console.log(JsonResponse.results);
                 JsonResponse.results.forEach(restaurant => {
+                    if (i > 4) {
+                        return;
+                    }
+                    i++;
                     this.restaurantsInYourArea.push({
                         name: restaurant.name,
                         icon: restaurant.icon,
-                        location: restaurant.geometry.location
+                        location: restaurant.geometry.location,
+                        vicinity: restaurant.vicinity
                     });
                 });
                 this.setState({loading: false});
@@ -136,6 +144,8 @@ export default class CameraRoll extends React.Component {
                   <View style={styles.restaurantContainer}>
                       <Image style={{width: 120, height: 120}} source={{uri: restaurant.icon}}/>
                       <Text>{restaurant.name}</Text>
+                      <Text>Location: {restaurant.vicinity}</Text>
+                      <Button title={'Go to restaurant'} onPress={() => Linking.openURL('google.navigation:q=' + restaurant.name)}/>
                   </View>
               );
           });
