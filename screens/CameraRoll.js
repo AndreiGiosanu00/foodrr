@@ -23,8 +23,6 @@ export default class CameraRoll extends React.Component {
     longitude = 0;
     restaurantsInYourArea = [];
 
-    //TODO Nu merge sa afisezi datele despre restaurantele din zona
-
     constructor() {
         super();
         this.state = {
@@ -35,11 +33,11 @@ export default class CameraRoll extends React.Component {
             tableData: [],
             loading: false
         };
-        this.getCurrentLocationAndRestaurantsInYourArea();
     }
 
     async getCurrentLocationAndRestaurantsInYourArea() {
         this.state.loading = true;
+        this.restaurantsInYourArea = [];
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
             alert('Permission to access location was denied');
@@ -51,7 +49,7 @@ export default class CameraRoll extends React.Component {
         this.longitude = location.coords.longitude;
 
         let restaurantsInMyArea = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + this.latitude + ',' + this.longitude +
-            '&radius=2500&type=restaurant&keyword=burger&key=AIzaSyDlbePn-1ooGqbMQdNb-2YQlv1JplGbxI4';
+            '&radius=2500&type=restaurant&keyword=' + this.state.detectedFood + '&key=AIzaSyDlbePn-1ooGqbMQdNb-2YQlv1JplGbxI4';
         fetch(restaurantsInMyArea)
             .then((response) => response.json())
             .then((JsonResponse) => {
@@ -62,19 +60,22 @@ export default class CameraRoll extends React.Component {
                         location: restaurant.geometry.location
                     });
                 });
-                this.state.loading = false;
+                this.setState({loading: false});
             })
             .catch((error) => {
                 alert('Something went wrong! Please try again.')
             });
-        this.state.loading = false;
     }
 
     render() {
         let { image } = this.state;
 
         if (this.state.loading) {
-            return <View><Text>Loading...</Text></View>;
+            return (
+                <View style={styles.loading}>
+                    <Text>Loading...</Text>
+                </View>
+            );
         }
 
         return (
@@ -110,15 +111,7 @@ export default class CameraRoll extends React.Component {
                         )}
                         {this._maybeRenderImage()}
                         {this._maybeRenderUploadingOverlay()}
-                        <View style={styles.restaurantsView}>
-                            <Text>Restaurants in your area that server this dish:</Text>
-                            <View style={styles.restaurantContainer}>
-                                <Image source={{uri: './assets/foodrr-logo.png'}} style={styles.restaurantImage}/>
-                                <Text>Imperial Grill & Music</Text>
-                                <Text>Pasta Carbonara</Text>
-                                <Button title={'Go to restaurant'}/>
-                            </View>
-                        </View>
+                        {this._maybeRenderRestaurantsList()}
                     </View>
                 </ScrollView>
             </View>
@@ -133,6 +126,28 @@ export default class CameraRoll extends React.Component {
                 </View>
             );
         });
+    };
+
+    _maybeRenderRestaurantsList = () => {
+      if (this.state.nutrientsResponse)  {
+         this.state.restaurantsListView = [];
+          this.restaurantsInYourArea.forEach(restaurant => {
+              this.state.restaurantsListView.push(
+                  <View style={styles.restaurantContainer}>
+                      <Image style={{width: 120, height: 120}} source={{uri: restaurant.icon}}/>
+                      <Text>{restaurant.name}</Text>
+                  </View>
+              );
+          });
+          return (
+              <View style={styles.restaurantsView}>
+                  <Text>Restaurants in your area that server this dish:</Text>
+                  {this.state.restaurantsListView}
+              </View>
+          );
+      }
+
+      return;
     };
 
     _maybeRenderUploadingOverlay = () => {
@@ -228,6 +243,7 @@ export default class CameraRoll extends React.Component {
     submitToGoogle = async () => {
         try {
             this.setState({ uploading: true });
+            this.state.restaurantsListView = [];
             let { image } = this.state;
             let body = JSON.stringify({
                 requests: [
@@ -274,7 +290,7 @@ export default class CameraRoll extends React.Component {
                 responseJson.responses[0].labelAnnotations.forEach((item) => {
                     if (errorResponses.indexOf(item.description) < 0) {
                         analyzerResponses.push(item);
-                        console.log('da');
+                        console.log('Added to Analyzer: ' + item.description);
                     }
                 });
             }
@@ -308,8 +324,11 @@ export default class CameraRoll extends React.Component {
                 uploading: false,
                 tableHead: ['Nutrient', 'Quantity', 'Unit'],
                 tableData: nutrientsTableData,
-                detectedFood: detectedFood
+                detectedFood: detectedFood,
+                loading: false,
+                restaurantsListView: []
             });
+            this.getCurrentLocationAndRestaurantsInYourArea();
 
         } catch (error) {
             console.log(error);
@@ -394,5 +413,13 @@ const styles = StyleSheet.create({
 
     restaurantImage: {
 
+    },
+
+    loading: {
+        marginTop: 350,
+        textAlign: 'center',
+        fontSize: 30,
+        fontWeight: 'bold',
+        alignItems: 'center'
     }
 });
