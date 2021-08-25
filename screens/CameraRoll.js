@@ -126,16 +126,6 @@ export default class CameraRoll extends React.Component {
         );
     }
 
-    organize = array => {
-        return array.map(function(item, i) {
-            return (
-                <View key={i}>
-                    <Text>{item}</Text>
-                </View>
-            );
-        });
-    };
-
     _maybeRenderRestaurantsList = () => {
       if (this.state.nutrientsResponse)  {
          this.state.restaurantsListView = [];
@@ -145,7 +135,8 @@ export default class CameraRoll extends React.Component {
                       <Image style={{width: 120, height: 120}} source={{uri: restaurant.icon}}/>
                       <Text>{restaurant.name}</Text>
                       <Text>Location: {restaurant.vicinity}</Text>
-                      <Button title={'Go to restaurant'} onPress={() => Linking.openURL('google.navigation:q=' + restaurant.name)}/>
+                      <Text>{this.getDistanceFromLatLonInKm(this.latitude, this.longitude, restaurant.location.lat, restaurant.location.lng).toFixed(2)}km</Text>
+                      <Button title={'Go to restaurant'} onPress={() => Linking.openURL('google.navigation:q=' + restaurant.vicinity)}/>
                   </View>
               );
           });
@@ -343,6 +334,24 @@ export default class CameraRoll extends React.Component {
         } catch (error) {
             console.log(error);
         }
+    };
+
+    getDistanceFromLatLonInKm = (lat1,lon1,lat2,lon2) => {
+        let R = 6371; // Radius of the earth in km
+        let dLat = this.deg2rad(lat2-lat1);  // deg2rad below
+        let dLon = this.deg2rad(lon2-lon1);
+        let a =
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+            Math.sin(dLon/2) * Math.sin(dLon/2)
+        ;
+        let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        let d = R * c; // Distance in km
+        return d;
+    };
+
+    deg2rad = (deg) => {
+        return deg * (Math.PI/180)
     };
 }
 
