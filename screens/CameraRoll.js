@@ -55,7 +55,6 @@ export default class CameraRoll extends React.Component {
             .then((response) => response.json())
             .then((JsonResponse) => {
                 let i = 0;
-                console.log(JsonResponse.results);
                 JsonResponse.results.forEach(restaurant => {
                     if (i > 4) {
                         return;
@@ -68,6 +67,7 @@ export default class CameraRoll extends React.Component {
                         vicinity: restaurant.vicinity
                     });
                 });
+                this.saveAnalyzedFoodData(this.restaurantsInYourArea);
                 this.setState({loading: false});
             })
             .catch((error) => {
@@ -157,11 +157,13 @@ export default class CameraRoll extends React.Component {
     _maybeRenderRecommendationFoodAndDrinks = () => {
         let drinksToRecommend = ['White Wine', 'Red Wine', 'Water', 'Roze Wine', 'Coke', 'Sprite', 'Coffee', 'Latte', 'Beer'];
         let foodsToRecommend = ['Salad', 'Focaccia', 'Potatoes', 'Rice', 'Black Rice', 'Bread', 'Smashed Potatoes', 'Cheese'];
+        this.state.recommendedDrink = drinksToRecommend[Math.floor(Math.random() * drinksToRecommend.length)];
+        this.state.recommendedFood = foodsToRecommend[Math.floor(Math.random() * foodsToRecommend.length)];
         if (this.state.nutrientsResponse)  {
             return (
                 <View>
-                    <Text>With this dish a {drinksToRecommend[Math.floor(Math.random() * drinksToRecommend.length)]} will be a great choice.</Text>
-                    <Text>Also, you can try some {foodsToRecommend[Math.floor(Math.random() * foodsToRecommend.length)]} on the side.</Text>
+                    <Text>With this dish a {this.state.recommendedDrink} will be a great choice.</Text>
+                    <Text>Also, you can try some {this.state.recommendedFood} on the side.</Text>
                 </View>
             );
         }
@@ -346,7 +348,6 @@ export default class CameraRoll extends React.Component {
                 restaurantsListView: []
             });
             this.getCurrentLocationAndRestaurantsInYourArea();
-
         } catch (error) {
             console.log(error);
         }
@@ -368,6 +369,22 @@ export default class CameraRoll extends React.Component {
 
     deg2rad = (deg) => {
         return deg * (Math.PI/180)
+    };
+
+    saveAnalyzedFoodData = (restaurantsInYourArea) => {
+        let id = Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+        firebase.database().ref('/analyzed_food/' + id).set({
+            image: this.state.image,
+            food: this.state.detectedFood,
+            nutrients: this.state.tableData,
+            restaurantsList: restaurantsInYourArea,
+            recommendedDrink: this.state.recommendedDrink,
+            recommendedFood: this.state.recommendedFood
+        }).then(snapshot => {
+            // console.log('Snapshot', snapshot);
+        });
     };
 }
 
