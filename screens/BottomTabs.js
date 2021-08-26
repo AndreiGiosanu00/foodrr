@@ -28,6 +28,11 @@ class BottomTabs extends Component {
                             <MaterialCommunityIcons name="home" color={color} size={size} />
                         )
                     }}
+                    listeners={{
+                        tabPress: e => {
+                            this.setState({reload: false});
+                        },
+                    }}
                 />
                 <Tab.Screen
                     name="ProfileScreen"
@@ -37,6 +42,11 @@ class BottomTabs extends Component {
                         tabBarIcon: ({ color, size }) => (
                             <MaterialCommunityIcons name="account" color={color} size={size} />
                         ),
+                    }}
+                    listeners={{
+                        tabPress: e => {
+                            this.setState({reload: false});
+                        },
                     }}
                 />
                 <Tab.Screen
@@ -48,6 +58,11 @@ class BottomTabs extends Component {
                             <MaterialCommunityIcons name="heart" color={color} size={size} />
                         ),
                     }}
+                    listeners={{
+                        tabPress: e => {
+                            this.setState({reload: false});
+                        },
+                    }}
                     style={{display: 'none'}}
                 />
                 <Tab.Screen
@@ -58,6 +73,11 @@ class BottomTabs extends Component {
                         tabBarIcon: ({ color, size }) => (
                             <MaterialCommunityIcons name="history" color={color} size={size} />
                         )
+                    }}
+                    listeners={{
+                        tabPress: e => {
+                            this.setState({reload: false});
+                        },
                     }}
                 />
             </Tab.Navigator>

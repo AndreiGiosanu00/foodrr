@@ -306,15 +306,13 @@ export default class CameraRoll extends React.Component {
             let errorResponses = ['Food', 'Bun', 'Ingredient', 'Staple food', 'Recipe', 'Fast food', 'Baked goods', 'Cuisine', 'Tableware', 'Sandwich', 'Plate', 'Dishware', 'Dish', 'Produce'];
 
             // filter the analyzer response
-            while(!analyzerResponses[0]) {
-                if (responseJson.responses && responseJson.responses[0] && responseJson.responses[0].labelAnnotations ) {
-                    responseJson.responses[0].labelAnnotations.forEach((item) => {
-                        if (errorResponses.indexOf(item.description) < 0) {
-                            analyzerResponses.push(item);
-                            console.log('Added to Analyzer: ' + item.description);
-                        }
-                    });
-                }
+            if (responseJson.responses && responseJson.responses[0] && responseJson.responses[0].labelAnnotations ) {
+                responseJson.responses[0].labelAnnotations.forEach((item) => {
+                    if (errorResponses.indexOf(item.description) < 0) {
+                        analyzerResponses.push(item);
+                        console.log('Added to Analyzer: ' + item.description);
+                    }
+                });
             }
 
             let detectedFood = analyzerResponses[0] ? analyzerResponses[0].description : 'Hamburger';

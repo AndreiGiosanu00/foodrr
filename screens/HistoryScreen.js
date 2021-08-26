@@ -16,8 +16,8 @@ import {Row, Rows, Table} from "react-native-table-component";
 const {width, height} = Dimensions.get('window');
 
 class HistoryScreen extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             foodsScanned: [],
             noHistory: false,
@@ -40,6 +40,7 @@ class HistoryScreen extends Component {
                     this.state.foodsScanned = Object.values(snapshot.val());
                 } else {
                     this.state.noHistory = true;
+                    console.log('da')
                 }
             });
     }
@@ -70,18 +71,26 @@ class HistoryScreen extends Component {
         this.state.foodItem = foodItem;
         console.log(foodItem);
         this.state.restaurantsListView = [];
-        foodItem.restaurantsList.forEach(restaurant => {
-           this.state.restaurantsListView.push(
-               <View>
-                   <Image style={{width: 120, height: 120}} source={{uri: restaurant.icon}}/>
-                   <Text>{restaurant.name}</Text>
-                   <Text>Location: {restaurant.vicinity}</Text>
-                   <Text>{this.getDistanceFromLatLonInKm(this.latitude, this.longitude, restaurant.location.lat, restaurant.location.lng).toFixed(2)}km</Text>
-                   <Button title={'Go to restaurant'}
-                           onPress={() => Linking.openURL('google.navigation:q=' + restaurant.vicinity)}/>
-               </View>
-           )
-        });
+        if (!foodItem.restaurantsList) {
+            this.state.restaurantsListView.push(
+                <View>
+                    <Text style={{textAlign: 'center'}}>There are no restaurants in your area serving this type of food.</Text>
+                </View>
+            )
+        } else {
+            foodItem.restaurantsList.forEach(restaurant => {
+                this.state.restaurantsListView.push(
+                    <View>
+                        <Image style={{width: 120, height: 120}} source={{uri: restaurant.icon}}/>
+                        <Text>{restaurant.name}</Text>
+                        <Text>Location: {restaurant.vicinity}</Text>
+                        <Text>{this.getDistanceFromLatLonInKm(this.latitude, this.longitude, restaurant.location.lat, restaurant.location.lng).toFixed(2)}km</Text>
+                        <Button title={'Go to restaurant'}
+                                onPress={() => Linking.openURL('google.navigation:q=' + restaurant.vicinity)}/>
+                    </View>
+                )
+            });
+        }
         this.setState({modalShow: true});
     }
 
