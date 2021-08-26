@@ -5,6 +5,7 @@ import LottieView from "lottie-react-native";
 import {TouchableRipple} from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import {ScrollView} from "react-native-gesture-handler";
+import firebase from "firebase";
 
 const {width, height} = Dimensions.get('window');
 
@@ -14,13 +15,51 @@ class DashboardScreen extends Component {
         this.state = {
             loading: false,
             noHistory: false,
-            modalShow: false
-        }
+            modalShow: false,
+            currentUser: firebase.auth().currentUser
+        };
+        firebase.database().ref('/analyzed_food/')
+            .on('value', snapshot => {
+                if (snapshot.val() !== null) {
+                    this.state.analyzedFood = Object.values(snapshot.val());
+                } else {
+                    this.state.noHistory = true;
+                }
+            });
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        firebase.database().ref('/analyzed_food/')
+            .on('value', snapshot => {
+                if (snapshot.val() !== null) {
+                    this.state.analyzedFood = Object.values(snapshot.val());
+                } else {
+                    this.state.noHistory = true;
+                }
+            });
+    }
+
+    componentDidMount() {
+        firebase.database().ref('/analyzed_food/')
+            .on('value', snapshot => {
+                if (snapshot.val() !== null) {
+                    this.state.analyzedFood = Object.values(snapshot.val());
+                } else {
+                    this.state.noHistory = true;
+                }
+            });
     }
 
     changeModalState(value) {
-        console.log('da');
         this.setState({modalShow: value});
+    }
+
+    openModal(foodItem) {
+        this.setState({modalShow: true});
+    }
+
+    closeModal() {
+        this.setState({modalShow: false});
     }
 
     render() {
@@ -68,7 +107,7 @@ class DashboardScreen extends Component {
                             <Text style={styles.modalText}>Below you will find more details about your food that was scanned using our app</Text>
                             <TouchableRipple
                                 style={[styles.button, styles.buttonClose]}
-                                onPress={() => this.changeModalState(false)}
+                                onPress={() => this.closeModal()}
                             >
                                 <Icon name="close" color="white" size={15}/>
                             </TouchableRipple>

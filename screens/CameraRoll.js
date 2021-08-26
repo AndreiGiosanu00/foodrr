@@ -32,7 +32,8 @@ export default class CameraRoll extends React.Component {
             googleResponse: null,
             tableHead: ['Nutrient', 'Quantity', 'Unit'],
             tableData: [],
-            loading: false
+            loading: false,
+            currentUser: firebase.auth().currentUser
         };
     }
 
@@ -302,16 +303,18 @@ export default class CameraRoll extends React.Component {
             let responseJson = await response.json();
             // console.log(responseJson);
             let analyzerResponses = [];
-            let errorResponses = ['Food', 'Bun', 'Ingredient', 'Staple food', 'Recipe', 'Fast food', 'Baked goods', 'Cuisine', 'Tableware', 'Sandwich'];
+            let errorResponses = ['Food', 'Bun', 'Ingredient', 'Staple food', 'Recipe', 'Fast food', 'Baked goods', 'Cuisine', 'Tableware', 'Sandwich', 'Plate', 'Dishware', 'Dish', 'Produce'];
 
             // filter the analyzer response
-            if (responseJson.responses && responseJson.responses[0] && responseJson.responses[0].labelAnnotations ) {
-                responseJson.responses[0].labelAnnotations.forEach((item) => {
-                    if (errorResponses.indexOf(item.description) < 0) {
-                        analyzerResponses.push(item);
-                        console.log('Added to Analyzer: ' + item.description);
-                    }
-                });
+            while(!analyzerResponses[0]) {
+                if (responseJson.responses && responseJson.responses[0] && responseJson.responses[0].labelAnnotations ) {
+                    responseJson.responses[0].labelAnnotations.forEach((item) => {
+                        if (errorResponses.indexOf(item.description) < 0) {
+                            analyzerResponses.push(item);
+                            console.log('Added to Analyzer: ' + item.description);
+                        }
+                    });
+                }
             }
 
             let detectedFood = analyzerResponses[0] ? analyzerResponses[0].description : 'Hamburger';
@@ -372,16 +375,37 @@ export default class CameraRoll extends React.Component {
     };
 
     saveAnalyzedFoodData = (restaurantsInYourArea) => {
-        let id = Math.floor((1 + Math.random()) * 0x10000)
-            .toString(16)
-            .substring(1);
+        const dateObj = new Date();
+        const month = dateObj.getMonth();
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        const output = day + '/' + month + '/' + year;
+
+        let id = Date.now();
         firebase.database().ref('/analyzed_food/' + id).set({
             image: this.state.image,
             food: this.state.detectedFood,
             nutrients: this.state.tableData,
             restaurantsList: restaurantsInYourArea,
             recommendedDrink: this.state.recommendedDrink,
-            recommendedFood: this.state.recommendedFood
+            recommendedFood: this.state.recommendedFood,
+            date: output,
+            user: this.state.currentUser.uid,
+            id: id
+        }).then(snapshot => {
+            // console.log('Snapshot', snapshot);
+        });
+        // add to history
+        firebase.database().ref('/history/' + id).set({
+            image: this.state.image,
+            food: this.state.detectedFood,
+            nutrients: this.state.tableData,
+            restaurantsList: restaurantsInYourArea,
+            recommendedDrink: this.state.recommendedDrink,
+            recommendedFood: this.state.recommendedFood,
+            date: output,
+            user: this.state.currentUser.uid,
+            id: id
         }).then(snapshot => {
             // console.log('Snapshot', snapshot);
         });
