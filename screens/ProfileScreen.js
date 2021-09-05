@@ -1,27 +1,79 @@
 import React, {Component} from 'react';
-import {View, SafeAreaView, StyleSheet} from 'react-native';
+import {View, SafeAreaView, StyleSheet, Modal, Image, Linking, Dimensions} from 'react-native';
 import {
     Avatar,
     Title,
     Caption,
     Text,
-    TouchableRipple,
+    TouchableRipple, TextInput,
 } from 'react-native-paper';
 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {Row, Rows, Table} from "react-native-table-component";
+import {ScrollView} from "react-native-gesture-handler";
+
+const {width, height} = Dimensions.get('window');
 
 class ProfileScreen extends Component {
+    state = {
+        modalShow: false
+    };
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+    }
+
+    componentDidMount() {
+    }
+
+
+    changeModalState(value) {
+        this.state.modalShow = value;
+    }
+
+    closeModal() {
+        this.state.modalShow = false;
+    }
 
     render() {
         return (
             <SafeAreaView style={styles.container}>
-
+                {/*Change user data Modal*/}
+                <Modal animationType="slide"
+                       transparent={true}
+                       visible={this.state.modalShow}>
+                    <View style={styles.centeredView}>
+                        <View style={styles.modalView}>
+                            <Text style={{color: '#777777', fontWeight: 'bold', textAlign: 'center', fontSize: 20}}>Change your profile details</Text>
+                            <TouchableRipple
+                                style={[styles.button, styles.buttonClose]}
+                                onPress={() => this.closeModal()}
+                            >
+                                <Icon name="close" color="white" size={15}/>
+                            </TouchableRipple>
+                            <View style={styles.modalContent}>
+                                <Text style={styles.inputLabel}>Your name</Text>
+                                <TextInput placeholder={'Andrei Giosanu'} style={styles.textInput} value={'Andrei Giosanu'}/>
+                                <Text style={styles.inputLabel}>Your username</Text>
+                                <TextInput placeholder={'agiosanu'} style={styles.textInput} value={'agiosanu'}/>
+                                <Text style={styles.inputLabel}>Your location</Text>
+                                <TextInput placeholder={'Bucharest, Romania'} style={styles.textInput} value={'Bucharest, Romania'}/>
+                                <Text style={styles.inputLabel}>Your email</Text>
+                                <TextInput placeholder={'Email'} style={styles.textInput} value={'andreigiosanu0@gmail.com'}/>
+                                <Text style={styles.inputLabel}>Your new password</Text>
+                                <TextInput placeholder={'New Password...'} style={styles.textInput}/>
+                                <Text style={styles.inputLabel}>Please confirm your new password</Text>
+                                <TextInput placeholder={'Confirm New Password...'} style={styles.textInput} />
+                                <TouchableRipple style={[styles.buttonClose, {padding: 5, width: 100, alignItems: 'center', borderRadius: 25, marginLeft: 125}]}>
+                                    <Text style={{color: 'white', fontWeight: 'bold', fontSize: 20, textAlign: 'center'}}>Submit</Text>
+                                </TouchableRipple>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
                 <View style={styles.userInfoSection}>
                     <View style={{flexDirection: 'row', marginTop: 15}}>
                         <Avatar.Image
-                            source={{
-                                uri: 'https://api.adorable.io/avatars/80/abott@adorable.png',
-                            }}
+                            source={require('../assets/profile.jpeg')}
                             size={80}
                         />
                         <View style={{marginLeft: 20}}>
@@ -54,7 +106,7 @@ class ProfileScreen extends Component {
                         borderRightColor: '#dddddd',
                         borderRightWidth: 1
                     }]}>
-                        <Title>1200 kcal</Title>
+                        <Title>450 kcal</Title>
                         <Caption>Today's kcal</Caption>
                     </View>
                     <View style={styles.infoBox}>
@@ -73,7 +125,9 @@ class ProfileScreen extends Component {
                     <TouchableRipple onPress={() => {}}>
                         <View style={styles.menuItem}>
                             <Icon name="account-check-outline" color="#4285F4" size={25}/>
-                            <Text style={styles.menuItemText}>Change your profile details</Text>
+                            <TouchableRipple onPress={this.changeModalState(true)}>
+                                <Text style={styles.menuItemText}>Change your profile details</Text>
+                            </TouchableRipple>
                         </View>
                     </TouchableRipple>
                 </View>
@@ -133,4 +187,76 @@ const styles = StyleSheet.create({
         fontSize: 16,
         lineHeight: 26,
     },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        width: width
+    },
+    modalView: {
+        margin: 10,
+        width: width - 20,
+        height: height - 150,
+        backgroundColor: "white",
+        borderRadius: 20,
+        paddingTop: 10,
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingBottom: 20,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    button: {
+        borderRadius: 20,
+        padding: 5,
+        elevation: 2,
+        position: 'absolute',
+        top: 7,
+        left: 357
+    },
+    buttonOpen: {
+        backgroundColor: "#F194FF",
+    },
+    buttonClose: {
+        backgroundColor: "#4285F4",
+    },
+    textStyle: {
+        color: "white",
+        fontWeight: "bold",
+        textAlign: "center"
+    },
+    modalTitle: {
+        fontSize: 25,
+        fontWeight: 'bold'
+    },
+    modalText: {
+        marginBottom: 15,
+        textAlign: "center",
+        fontSize: 15,
+        color: '#777777'
+    },
+    modalContent: {
+        marginTop: 30
+    },
+
+    textInput: {
+        width: 350,
+        height: 30,
+        borderRadius: 10,
+        padding: 5,
+        marginBottom: 15,
+        marginTop: 5
+    },
+
+    inputLabel: {
+        fontWeight: 'bold',
+        color: '#777777',
+    }
 });

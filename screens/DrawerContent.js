@@ -30,9 +30,7 @@ export function DrawerContent(props) {
                     <View style={styles.userInfoSection}>
                         <View style={{flexDirection:'row',marginTop: 15}}>
                             <Avatar.Image
-                                source={{
-                                    uri: 'https://api.adorable.io/avatars/50/abott@adorable.png'
-                                }}
+                                source={require('../assets/profile.jpeg')}
                                 size={50}
                             />
                             <View style={{marginLeft:15, flexDirection:'column'}}>
@@ -43,11 +41,11 @@ export function DrawerContent(props) {
 
                         <View style={styles.row}>
                             <Paragraph style={[styles.paragraph, styles.caption]}>Today: </Paragraph>
-                            <Caption style={styles.caption}>1350 Kcal</Caption>
+                            <Caption style={styles.caption}>450 Kcal</Caption>
                         </View>
                         <View style={styles.row}>
                             <Paragraph style={[styles.paragraph, styles.caption]}>Average: </Paragraph>
-                            <Caption style={styles.caption}>2200 Kcal</Caption>
+                            <Caption style={styles.caption}>1960 Kcal</Caption>
                         </View>
                     </View>
 
@@ -95,17 +93,6 @@ export function DrawerContent(props) {
                             )}
                             label="History"
                             onPress={() => {props.navigation.navigate('HistoryScreen')}}
-                        />
-                        <DrawerItem
-                            icon={({color, size}) => (
-                                <Icon
-                                    name="calculator"
-                                    color={color}
-                                    size={size}
-                                />
-                            )}
-                            label="Calories Calculator"
-                            onPress={() => {props.navigation.navigate('KcalCalculatorScreen')}}
                         />
                     </Drawer.Section>
                 </View>

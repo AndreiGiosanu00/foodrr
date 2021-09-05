@@ -131,6 +131,7 @@ class LoginScreen extends Component {
         if(this.state.email === '' && this.state.password === '') {
             Alert.alert('Enter details to login!')
         } else {
+            // Login cu user și parolă
             firebase
                 .auth()
                 .signInWithEmailAndPassword(this.state.email, this.state.password)
@@ -141,7 +142,7 @@ class LoginScreen extends Component {
                         email: '',
                         password: ''
                     });
-                    this.props.navigation.navigate('DashboardAnimation');
+                    this.props.navigation.navigate('Home');
                 })
                 .catch(error => this.setState({ errorMessage: error.message }))
         }
@@ -180,7 +181,7 @@ class LoginScreen extends Component {
                       profilePicture: result.photoURL,
                       displayName: result.displayName
                   }).then(snapshot => {
-                     // console.log('Snapshot', snapshot);
+                     console.log('Snapshot', snapshot);
                   });
                 }).catch((error) => {
                     // Handle Errors here.
@@ -190,7 +191,6 @@ class LoginScreen extends Component {
                     var email = error.email;
                     // The firebase.auth.AuthCredential type that was used.
                     var credential = error.credential;
-                    // ...
 
                     console.log(errorMessage);
                 });
@@ -251,7 +251,7 @@ class LoginScreen extends Component {
                         <Text style={{fontSize: 20, fontWeight: 'bold', color: 'white'}} onPress={() => this.signInWithGoogleAsync()}>Login with Google</Text>
                     </Animated.View>
                     <Animated.View style={{...styles.signUpLink, opacity: this.buttonOpacity, transform: [{translateY: this.buttonY}]}}>
-                        <Text style={{color: 'white', fontWeight: 'bold'}}>First time here? <Text style={{color: '#4285F4', fontWeight: 'bold'}} onPress={() => this.props.navigation.navigate('RegisterAnimation')}>Sign Up.</Text></Text>
+                        <Text style={{color: 'white', fontWeight: 'bold'}}>First time here? <Text style={{color: '#4285F4', fontWeight: 'bold'}} onPress={() => this.props.navigation.navigate('RegisterScreen')}>Sign Up.</Text></Text>
                     </Animated.View>
                     <Animated.View style={{height: height / 3, ...StyleSheet.absoluteFill, top: null,
                         justifyContent: 'center', zIndex: this.textInputZIndex,

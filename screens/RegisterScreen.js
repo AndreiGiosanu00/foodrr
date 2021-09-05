@@ -95,10 +95,11 @@ class RegisterScreen extends Component {
                             secureTextEntry={true}
                         />
                         <Animated.View style={{...styles.button, marginTop: 15}}>
-                            <Button style={{fontSize: 20, fontWeight: 'bold'}} onPress={() => this.registerUser()} title="Sign Up"/>
+                            {/*<Button style={{fontSize: 20, fontWeight: 'bold'}} onPress={() => this.registerUser()} title="Sign Up"/>*/}
+                            <Text style={{fontSize: 20, fontWeight: 'bold'}} onPress={() => this.registerUser()}>Sign Up</Text>
                         </Animated.View>
                         <Animated.View style={{...styles.loginLink}}>
-                            <Text>Do you have an account? <Text style={{color: '#4285F4', fontWeight: 'bold'}} onPress={() => this.props.navigation.navigate('LoginAnimation')}>Login.</Text></Text>
+                            <Text>Do you have an account? <Text style={{color: '#4285F4', fontWeight: 'bold'}} onPress={() => this.props.navigation.navigate('LoginScreen')}>Login.</Text></Text>
                         </Animated.View>
                     </Animated.View>
                 </ImageBackground>

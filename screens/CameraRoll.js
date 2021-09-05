@@ -1,23 +1,23 @@
 import React from 'react';
 import {
     ActivityIndicator,
-    Button,
-    Clipboard,
-    FlatList,
     Image,
-    Share,
     StyleSheet,
     Text,
     ScrollView,
     View, Dimensions,
     Linking
 } from 'react-native';
-import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
+import { Table, Row, Rows } from 'react-native-table-component';
 import uuid from 'react-native-uuid';
 import Environment from '../config/environment';
 import firebase from "firebase";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from 'expo-location';
+import {TouchableRipple} from "react-native-paper";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+
+const {width, height} = Dimensions.get('window');
 
 export default class CameraRoll extends React.Component {
     latitude = 0;
@@ -93,32 +93,54 @@ export default class CameraRoll extends React.Component {
                     style={styles.container}
                     contentContainerStyle={styles.contentContainer}
                 >
-                    <Button title={'Go back'} onPress={() => {
-                        this.props.navigation.navigate('BottomTabs');
-                    }} style={{marginTop: 150}}/>
-                    <View style={styles.getStartedContainer}>
-                        {image ? null : (
-                            <Text style={styles.getStartedText}>Foodrr</Text>
-                        )}
-                    </View>
-
                     <View style={styles.helpContainer}>
-                        <Button
-                            onPress={this._pickImage}
-                            title="Pick an image from camera roll"
-                        />
+                        <TouchableRipple style={styles.goBackButton}  onPress={() => {
+                            this.props.navigation.navigate('BottomTabs');
+                        }}>
+                            <Icon name={'arrow-left'} size={25} color={'white'} style={{textAlign: 'center', marginTop: 2}}/>
+                        </TouchableRipple>
+                        <View style={styles.getStartedContainer}>
+                            {image ? null : (
+                                <View>
+                                    <Text style={styles.getStartedText}>Foodrr - Scan Food</Text>
+                                    <Text style={{color: '#777777', textAlign: 'center'}}>Welcome! Here you can analyze your favorite food by uploading an image with it from your local library or taking a photo right now of you dish that you are serving.</Text>
+                                </View>
+                            )}
 
-                        <Button onPress={this._takePhoto} title="Take a photo" />
+                            {image ? (
+                                <View>
+                                    <Text style={styles.getStartedText}>Foodrr - Scan Food</Text>
+                                    <Text style={{color: '#777777', textAlign: 'center'}}>There is your uploaded or taken image. Tap analyze to start the analyzing process.</Text>
+                                </View>
+                            ) : null}
+                        </View>
+                        <View style={{flexDirection: 'row'}}>
+                            <Text style={{color: '#777777', fontSize: 15, fontWeight: 'bold', marginLeft: 50}}>Pick an image</Text>
+                            <Text style={{marginLeft: 40, marginRight: 40, color: '#777777'}}> or </Text>
+                            <Text style={{color: '#777777', fontSize: 15, fontWeight: 'bold', marginLeft: 0}}>Take a photo</Text>
+                        </View>
+                        <View style={{flexDirection: 'row'}}>
+                            <TouchableRipple onPress={this._pickImage} style={styles.imageSelectorButton}>
+                                <Icon name={'image-album'} size={75} color={'white'}/>
+                            </TouchableRipple>
+                            <TouchableRipple onPress={this._takePhoto} style={[styles.imageSelectorButton, {marginLeft: 120}]}>
+                                <Icon name={'camera'} size={75} color={'white'}/>
+                            </TouchableRipple>
+                        </View>
+
                         {this.state.nutrientsResponse && (
-                            <View style={styles.container}>
-                                <Text>In your image it's a dish that contains {this.state.detectedFood}</Text>
-                                <Text>Nutrients:</Text>
-                                <View style={styles.container}>
+                            <View style={[styles.container, {padding: 10}]}>
+                                <Text style={{color: '#777777', textAlign: 'center'}}>In your image it's a dish that contains <Text style={{fontWeight: 'bold'}}>{this.state.detectedFood}</Text>.</Text>
+                                <Text style={{textAlign: 'center', fontWeight: 'bold', color: '#777777', marginTop: 10}}>Nutrients (per 100g)</Text>
+                                <View style={[styles.container, {marginTop: 15}]}>
                                     <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
                                         <Row data={this.state.tableHead} style={styles.head} textStyle={styles.text}/>
                                         <Rows data={this.state.tableData} textStyle={styles.text}/>
                                     </Table>
                                 </View>
+                                <TouchableRipple style={[styles.imageSelectorButton, {marginLeft: 0}]} onPress={() => { this.props.navigation.navigate('FavoritesScreen');}}>
+                                    <Text style={{fontWeight: 'bold', color: 'white', fontSize: 16}}>Add this to your favorites list</Text>
+                                </TouchableRipple>
                             </View>
                         )}
                         {this._maybeRenderImage()}
@@ -136,19 +158,24 @@ export default class CameraRoll extends React.Component {
           this.state.restaurantsListView = [];
           this.restaurantsInYourArea.forEach(restaurant => {
               this.state.restaurantsListView.push(
-                  <View style={styles.restaurantContainer}>
-                      <Image style={{width: 120, height: 120}} source={{uri: restaurant.icon}}/>
-                      <Text>{restaurant.name}</Text>
-                      <Text>Location: {restaurant.vicinity}</Text>
-                      <Text>{this.getDistanceFromLatLonInKm(this.latitude, this.longitude, restaurant.location.lat, restaurant.location.lng).toFixed(2)}km</Text>
-                      <Button title={'Go to restaurant'}
-                              onPress={() => Linking.openURL('google.navigation:q=' + restaurant.vicinity)}/>
+                  <View style={{marginTop: 5, borderBottomColor: '#dddddd', borderBottomWidth: 1, padding: 5}}>
+                      <View style={{flexDirection: 'row'}}>
+                          <Image style={{width: 50, height: 50}} source={{uri: 'https://cdn3.vectorstock.com/i/1000x1000/12/02/restaurant-menu-icon-vector-4731202.jpg'}}/>
+                          <Text style={{fontWeight: 'bold', fontSize: 18, marginTop: 10, marginLeft: 15, color: '#777777'}}>{restaurant.name}</Text>
+                          <TouchableRipple style={{backgroundColor: '#4285F4', color: 'white', paddingBottom: 5,
+                              paddingTop: 5, alignItems: 'center', borderRadius: 50, width: 120, height: 35, marginTop: 5,
+                              marginLeft: 30}} onPress={() => Linking.openURL('google.navigation:q=' + restaurant.vicinity)}>
+                              <Text style={{color: 'white', fontWeight: 'bold'}}>Navigate <Icon name="google-maps" color="white" size={20}/></Text>
+                          </TouchableRipple>
+                      </View>
+                      <Text style={{color: '#777777'}}><Text style={{fontWeight: 'bold'}}>Location:</Text> {restaurant.vicinity}</Text>
+                      <Text style={{fontWeight: 'bold', color: '#777777'}}>{this.getDistanceFromLatLonInKm(this.latitude, this.longitude, restaurant.location.lat, restaurant.location.lng).toFixed(2)} km from your current location</Text>
                   </View>
               );
           });
           return (
               <View style={styles.restaurantsView}>
-                  <Text>Restaurants in your area that server this dish:</Text>
+                  <Text style={{color: '#777777', fontWeight: 'bold', textAlign: 'center'}}>Restaurants in your area that server this dish</Text>
                   {this.state.restaurantsListView}
               </View>
           );
@@ -163,8 +190,8 @@ export default class CameraRoll extends React.Component {
         if (this.state.nutrientsResponse)  {
             return (
                 <View>
-                    <Text>With this dish a {this.state.recommendedDrink} will be a great choice.</Text>
-                    <Text>Also, you can try some {this.state.recommendedFood} on the side.</Text>
+                    <Text style={{color: '#777777', textAlign: 'center', marginTop: 10}}>With this dish a{/* {this.state.recommendedDrink}*/} Fresh Juice will be a great choice</Text>
+                    <Text style={{color: '#777777', textAlign: 'center'}}>Also, you can try some{/* {this.state.recommendedFood}*/} Bread on the side</Text>
                 </View>
             );
         }
@@ -199,17 +226,12 @@ export default class CameraRoll extends React.Component {
             <View
                 style={{
                     marginTop: 20,
-                    width: 250,
                     borderRadius: 3,
-                    elevation: 2
+                    elevation: 2,
+                    alignItems: 'center',
+                    padding: 10
                 }}
             >
-                <Button
-                    style={{ marginBottom: 10 }}
-                    onPress={() => this.submitToGoogle()}
-                    title="Analyze your image!"
-                />
-
                 <View
                     style={{
                         borderTopRightRadius: 3,
@@ -221,8 +243,11 @@ export default class CameraRoll extends React.Component {
                         overflow: 'hidden'
                     }}
                 >
-                    <Image source={{ uri: image }} style={{ width: 250, height: 250 }} />
+                    <Image source={{ uri: image }} style={{ width: 350, height: 350, borderRadius: 15 }}/>
                 </View>
+                <TouchableRipple onPress={() => this.submitToGoogle()} style={[styles.imageSelectorButton, {borderRadius: 15, padding: 10, alignItems: 'center', marginLeft: 0, marginBottom: 10}]}>
+                    <Text style={{color: 'white', fontWeight: 'bold', fontSize: 18}}>Analyze</Text>
+                </TouchableRipple>
             </View>
         );
     };
@@ -269,16 +294,7 @@ export default class CameraRoll extends React.Component {
                 requests: [
                     {
                         features: [
-                            { type: 'LABEL_DETECTION', maxResults: 10 },
-                            { type: 'LANDMARK_DETECTION', maxResults: 5 },
-                            { type: 'FACE_DETECTION', maxResults: 5 },
-                            { type: 'LOGO_DETECTION', maxResults: 5 },
-                            { type: 'TEXT_DETECTION', maxResults: 5 },
-                            { type: 'DOCUMENT_TEXT_DETECTION', maxResults: 5 },
-                            { type: 'SAFE_SEARCH_DETECTION', maxResults: 5 },
-                            { type: 'IMAGE_PROPERTIES', maxResults: 5 },
-                            { type: 'CROP_HINTS', maxResults: 5 },
-                            { type: 'WEB_DETECTION', maxResults: 5 }
+                            { type: 'WEB_DETECTION', maxResults: 10 }
                         ],
                         image: {
                             source: {
@@ -301,13 +317,15 @@ export default class CameraRoll extends React.Component {
                 }
             );
             let responseJson = await response.json();
-            // console.log(responseJson);
+            console.log(responseJson.responses);
             let analyzerResponses = [];
-            let errorResponses = ['Food', 'Bun', 'Ingredient', 'Staple food', 'Recipe', 'Fast food', 'Baked goods', 'Cuisine', 'Tableware', 'Sandwich', 'Plate', 'Dishware', 'Dish', 'Produce'];
+            let errorResponses = ['Food', 'Bun', 'Ingredient', 'Staple food', 'Recipe', 'Fast food', 'Baked goods',
+                'Cuisine', 'Tableware', 'Sandwich', 'Plate', 'Dishware', 'Dish', 'Produce', 'European cuisine',
+                'Flammekueche', 'Vegetarian cuisine'];
 
             // filter the analyzer response
-            if (responseJson.responses && responseJson.responses[0] && responseJson.responses[0].labelAnnotations ) {
-                responseJson.responses[0].labelAnnotations.forEach((item) => {
+            if (responseJson.responses && responseJson.responses[0] && responseJson.responses[0].webDetection ) {
+                responseJson.responses[0].webDetection.webEntities.forEach((item) => {
                     if (errorResponses.indexOf(item.description) < 0) {
                         analyzerResponses.push(item);
                         console.log('Added to Analyzer: ' + item.description);
@@ -411,6 +429,7 @@ export default class CameraRoll extends React.Component {
 }
 
 async function uploadImageAsync(uri) {
+    // se crează elementul blobb
     const blob = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.onload = function() {
@@ -425,6 +444,7 @@ async function uploadImageAsync(uri) {
         xhr.send(null);
     });
 
+    // se încarcă imaginea în Firebase Storage
     const ref = firebase
         .storage()
         .ref()
@@ -454,21 +474,21 @@ const styles = StyleSheet.create({
     },
 
     getStartedContainer: {
-        marginVertical: 15,
         alignItems: 'center',
-        marginHorizontal: 50
+        padding: 10
     },
 
     getStartedText: {
-        fontSize: 17,
-        color: 'rgba(96,100,109, 1)',
+        fontSize: 25,
+        color: '#777777',
+        fontWeight: 'bold',
         lineHeight: 24,
         textAlign: 'center'
     },
 
     helpContainer: {
         marginTop: 15,
-        alignItems: 'center'
+        height: height
     },
 
     header: { height: 50, backgroundColor: '#537791' },
@@ -495,5 +515,27 @@ const styles = StyleSheet.create({
         fontSize: 30,
         fontWeight: 'bold',
         alignItems: 'center'
+    },
+
+    goBackButton: {
+        width: 40,
+        height: 40,
+        backgroundColor: '#4285F4',
+        alignItems: 'center',
+        padding: 5,
+        color: 'white',
+        borderRadius: 50,
+        marginTop: 10,
+        marginLeft: 10
+    },
+
+    imageSelectorButton: {
+        backgroundColor: '#4285F4',
+        alignItems: 'center',
+        padding: 5,
+        color: 'white',
+        borderRadius: 20,
+        marginLeft: 60,
+        marginTop: 10
     }
 });
