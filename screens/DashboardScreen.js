@@ -7,10 +7,125 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import {ScrollView} from "react-native-gesture-handler";
 import firebase from "firebase";
 import {Row, Rows, Table} from "react-native-table-component";
+import * as Location from "expo-location";
 
 const {width, height} = Dimensions.get('window');
 
 class DashboardScreen extends Component {
+    latitude = 0;
+    longitude = 0;
+
+    recommendationModels = [
+        {
+            food: 'Shrimp salad',
+            image: 'https://www.foodiecrush.com/wp-content/uploads/2017/07/Citrus-Shrimp-Avocado-Salad-foodiecrush.com-001.jpg',
+            nutrients: [
+                ['Carbs', 4.8, 'g'],
+                ['Energy', 685, 'kcal'],
+                ['Sugars', 3.7, 'g'],
+                ['Saturated', 88, 'g'],
+                ['Protein', 32, 'g'],
+                ['Sodium', 680, 'mg']
+            ],
+            restaurantsList: [
+                {
+                    icon: 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png',
+                    location: {
+                        lat: 47.4647404594946,
+                        lng: 26.299269430058718
+                    },
+                    name: 'Imperial Grill',
+                    vicinity: 'Strada Sucevei 12, Falticeni'
+                },
+                {
+                    icon: 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png',
+                    location: {
+                        lat: 47.6461668,
+                        lng: 26.2604547
+                    },
+                    name: 'Lovegan',
+                    vicinity: 'incinta hotel daily plaza, Strada Ștefan cel Mare 4, Suceava'
+                },
+            ],
+            recommendedDrink: 'Coke',
+            recommendedFood: 'Rice',
+            date: 'Recommendation made using our AI',
+            itsARecommendation: true
+        },
+        {
+            food: 'Texas burger',
+            image: 'https://www.sargento.com/assets/Uploads/Recipe/Image/burger_0.jpg',
+            nutrients: [
+                ['Carbs', 25.7, 'g'],
+                ['Energy', 1600, 'kcal'],
+                ['Sugars', 13.7, 'g'],
+                ['Saturated', 98, 'g'],
+                ['Protein', 62, 'g'],
+                ['Sodium', 880, 'mg']
+            ],
+            restaurantsList: [
+                {
+                    icon: 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png',
+                    location: {
+                        lat: 47.4647404594946,
+                        lng: 26.299269430058718
+                    },
+                    name: 'Imperial Grill',
+                    vicinity: 'Strada Sucevei 12, Falticeni'
+                },
+                {
+                    icon: 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png',
+                    location: {
+                        lat: 47.6461668,
+                        lng: 26.2604547
+                    },
+                    name: 'Lovegan',
+                    vicinity: 'incinta hotel daily plaza, Strada Ștefan cel Mare 4, Suceava'
+                },
+            ],
+            recommendedDrink: 'Coke',
+            recommendedFood: 'French fries',
+            date: 'Recommendation made using our AI',
+            itsARecommendation: true
+        },
+        {
+            food: 'Tacos',
+            image: 'https://mexican.ro/img/leoblog/b/1/16/lg-b-poza%20articol%207.jpeg',
+            nutrients: [
+                ['Carbs', 25.7, 'g'],
+                ['Energy', 1600, 'kcal'],
+                ['Sugars', 13.7, 'g'],
+                ['Saturated', 98, 'g'],
+                ['Protein', 62, 'g'],
+                ['Sodium', 880, 'mg']
+            ],
+            restaurantsList: [
+                {
+                    icon: 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png',
+                    location: {
+                        lat: 47.4647404594946,
+                        lng: 26.299269430058718
+                    },
+                    name: 'Imperial Grill',
+                    vicinity: 'Strada Sucevei 12, Falticeni'
+                },
+                {
+                    icon: 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png',
+                    location: {
+                        lat: 47.6461668,
+                        lng: 26.2604547
+                    },
+                    name: 'Lovegan',
+                    vicinity: 'incinta hotel daily plaza, Strada Ștefan cel Mare 4, Suceava'
+                },
+            ],
+            recommendedDrink: 'Coke',
+            recommendedFood: 'Salad',
+            date: 'Recommendation made using our AI',
+            itsARecommendation: true
+        },
+    ];
+
     constructor() {
         super();
         this.state = {
@@ -19,6 +134,23 @@ class DashboardScreen extends Component {
             modalShow: false,
             recommendModalShow: false,
             recommendExpandedModalShow: false,
+            recommendedFood: {
+                food: 'Shrimp salad',
+                image: 'https://www.foodiecrush.com/wp-content/uploads/2017/07/Citrus-Shrimp-Avocado-Salad-foodiecrush.com-001.jpg',
+                date: 'Recommendation made using our AI',
+                nutrients: [
+                    ['Carbs', 4.8, 'g'],
+                    ['Energy', 685, 'kcal'],
+                    ['Sugars', 3.7, 'g'],
+                    ['Saturated', 88, 'g'],
+                    ['Protein', 32, 'g'],
+                    ['Sodium', 680, 'mg']
+                ],
+                restaurantsList: [],
+                recommendedDrink: 'Coke',
+                recommendedFood: 'Rice',
+                itsARecommendation: true
+            },
             currentUser: firebase.auth().currentUser,
             foodItem: {
                 food: 'Chicken salad',
@@ -39,7 +171,7 @@ class DashboardScreen extends Component {
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         firebase.database().ref('/analyzed_food/')
             .on('value', snapshot => {
                 if (snapshot.val() !== null) {
@@ -85,12 +217,17 @@ class DashboardScreen extends Component {
 
         setInterval(() => {
             if (!this.state.recommendModalShow) {
-                this.setState({recommendModalShow: true});
+                this.setState({recommendModalShow: true, recommendedFood: this.recommendationModels[Math.floor(Math.random() * this.recommendationModels.length)]});
             }
-        }, 120000);
+        }, 125000);
+
+        let location = await Location.getCurrentPositionAsync({});
+        this.latitude = location.coords.latitude;
+        this.longitude = location.coords.longitude;
     }
 
     openModal(foodItem) {
+        this.setState({recommendModalShow: false});
         this.state.foodItem = foodItem;
         this.state.restaurantsListView = [];
         if (!foodItem.restaurantsList) {
@@ -200,13 +337,15 @@ class DashboardScreen extends Component {
                                 >
                                     <Icon name="close" color="white" size={15} style={{fontWeight: 'bold'}}/>
                                 </TouchableRipple>
-                                <Text style={{color: '#777777', fontWeight: 'bold', marginRight: 40, fontSize: 16}}>Try this dish! - Shrimp salad</Text>
+                                <Text style={{color: '#777777', fontWeight: 'bold', marginRight: 40, fontSize: 16}}>Try this dish! - {this.state.recommendedFood.food}</Text>
                             </View>
                             <View style={{flexDirection: 'row'}}>
-                                <Image source={{uri: 'https://www.foodiecrush.com/wp-content/uploads/2017/07/Citrus-Shrimp-Avocado-Salad-foodiecrush.com-001.jpg'}}
+                                <Image source={{uri: this.state.recommendedFood.image}}
                                        style={{width: 60, height: 60, borderRadius: 50}}
                                 />
-                                <Text style={{color: '#4285F4', maxWidth: 150, marginLeft: 25, marginTop: 10}}>Click here if you want to see more details!</Text>
+                                <TouchableRipple onPress={() => {this.openModal(this.state.recommendedFood)}}>
+                                    <Text style={{color: '#4285F4', maxWidth: 150, marginLeft: 25, marginTop: 10}}>Click here if you want to see more details!</Text>
+                                </TouchableRipple>
                             </View>
 
                         </View>
@@ -271,9 +410,14 @@ class DashboardScreen extends Component {
                        visible={this.state.modalShow}>
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
-                            <Text style={styles.modalTitle}>{this.state.foodItem.food}</Text>
+                            <Text style={styles.modalTitle}>{this.state.foodItem.itsARecommendation ? 'Try some ' + this.state.foodItem.food : this.state.foodItem.food}</Text>
                             <Image style={{width: 85, height: 85, borderRadius: 25}} source={{uri: this.state.foodItem.image}}/>
-                            <Text style={styles.modalText}>Below you will find more details about your food that was scanned using our app</Text>
+                            <Text style={styles.modalText}>
+                                {(this.state.foodItem.itsARecommendation ?
+                                    'We thought you\'d like this dish! Our AI-based algorithm found this dish similar to what you like, if you don\'t like this dish you can close this pop, and we will take note of this.'
+                                    :
+                                    'Below you will find more details about your food that was scanned using our app')}
+                            </Text>
                             <TouchableRipple
                                 style={[styles.button, styles.buttonClose]}
                                 onPress={() => this.closeModal()}
