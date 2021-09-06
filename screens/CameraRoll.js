@@ -8,7 +8,7 @@ import {
     View, Dimensions,
     Linking
 } from 'react-native';
-import { Table, Row, Rows } from 'react-native-table-component';
+import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
 import uuid from 'react-native-uuid';
 import Environment from '../config/environment';
 import firebase from "firebase";
@@ -51,7 +51,7 @@ export default class CameraRoll extends React.Component {
         this.longitude = location.coords.longitude;
 
         let restaurantsInMyArea = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + this.latitude + ',' + this.longitude +
-            '&radius=2500&type=restaurant&keyword=' + this.state.detectedFood + '&key=AIzaSyDlbePn-1ooGqbMQdNb-2YQlv1JplGbxI4';
+            '&radius=52000&type=restaurant&keyword=' + this.state.detectedFood + '&key=AIzaSyDlbePn-1ooGqbMQdNb-2YQlv1JplGbxI4';
         fetch(restaurantsInMyArea)
             .then((response) => response.json())
             .then((JsonResponse) => {
@@ -93,27 +93,27 @@ export default class CameraRoll extends React.Component {
                     style={styles.container}
                     contentContainerStyle={styles.contentContainer}
                 >
-                    <View style={styles.helpContainer}>
-                        <TouchableRipple style={styles.goBackButton}  onPress={() => {
-                            this.props.navigation.navigate('BottomTabs');
-                        }}>
-                            <Icon name={'arrow-left'} size={25} color={'white'} style={{textAlign: 'center', marginTop: 2}}/>
-                        </TouchableRipple>
-                        <View style={styles.getStartedContainer}>
-                            {image ? null : (
-                                <View>
-                                    <Text style={styles.getStartedText}>Foodrr - Scan Food</Text>
-                                    <Text style={{color: '#777777', textAlign: 'center'}}>Welcome! Here you can analyze your favorite food by uploading an image with it from your local library or taking a photo right now of you dish that you are serving.</Text>
-                                </View>
-                            )}
+                    <TouchableRipple style={styles.goBackButton}  onPress={() => {
+                        this.props.navigation.navigate('BottomTabs');
+                    }}>
+                        <Icon name={'arrow-left'} size={25} color={'white'} style={{textAlign: 'center', marginTop: 2}}/>
+                    </TouchableRipple>
+                    <View style={styles.getStartedContainer}>
+                        {image ? null : (
+                            <View>
+                                <Text style={styles.getStartedText}>Foodrr - Scan Food</Text>
+                                <Text style={{color: '#777777', textAlign: 'center'}}>Welcome! Here you can analyze your favorite food by uploading an image with it from your local library or taking a photo right now of you dish that you are serving.</Text>
+                            </View>
+                        )}
 
-                            {image ? (
-                                <View>
-                                    <Text style={styles.getStartedText}>Foodrr - Scan Food</Text>
-                                    <Text style={{color: '#777777', textAlign: 'center'}}>There is your uploaded or taken image. Tap analyze to start the analyzing process.</Text>
-                                </View>
-                            ) : null}
-                        </View>
+                        {image ? (
+                            <View>
+                                <Text style={styles.getStartedText}>Foodrr - Scan Food</Text>
+                                <Text style={{color: '#777777', textAlign: 'center'}}>There is your uploaded or taken image. Tap analyze to start the analyzing process.</Text>
+                            </View>
+                        ) : null}
+                    </View>
+                    <View style={styles.helpContainer}>
                         <View style={{flexDirection: 'row'}}>
                             <Text style={{color: '#777777', fontSize: 15, fontWeight: 'bold', marginLeft: 50}}>Pick an image</Text>
                             <Text style={{marginLeft: 40, marginRight: 40, color: '#777777'}}> or </Text>
@@ -138,7 +138,10 @@ export default class CameraRoll extends React.Component {
                                         <Rows data={this.state.tableData} textStyle={styles.text}/>
                                     </Table>
                                 </View>
-                                <TouchableRipple style={[styles.imageSelectorButton, {marginLeft: 0}]} onPress={() => { this.props.navigation.navigate('FavoritesScreen');}}>
+                                <TouchableRipple style={[styles.imageSelectorButton, {marginLeft: 0}]} onPress={() => {
+                                    this.addToFavorites(this.restaurantsInYourArea);
+                                    this.props.navigation.navigate('FavoritesScreen');
+                                }}>
                                     <Text style={{fontWeight: 'bold', color: 'white', fontSize: 16}}>Add this to your favorites list</Text>
                                 </TouchableRipple>
                             </View>
@@ -173,12 +176,22 @@ export default class CameraRoll extends React.Component {
                   </View>
               );
           });
+
+          if (this.state.restaurantsListView.length > 0) {
+              return (
+                  <View style={styles.restaurantsView}>
+                      <Text style={{color: '#777777', fontWeight: 'bold', textAlign: 'center'}}>Restaurants in your area that serve this dish</Text>
+                      {this.state.restaurantsListView}
+                  </View>
+              );
+          }
+
           return (
               <View style={styles.restaurantsView}>
-                  <Text style={{color: '#777777', fontWeight: 'bold', textAlign: 'center'}}>Restaurants in your area that server this dish</Text>
-                  {this.state.restaurantsListView}
+                  <Text style={{color: '#777777', fontWeight: 'bold', textAlign: 'center'}}>There are no restaurants in your area that serve this dish.</Text>
               </View>
           );
+
       }
     };
 
@@ -321,7 +334,9 @@ export default class CameraRoll extends React.Component {
             let analyzerResponses = [];
             let errorResponses = ['Food', 'Bun', 'Ingredient', 'Staple food', 'Recipe', 'Fast food', 'Baked goods',
                 'Cuisine', 'Tableware', 'Sandwich', 'Plate', 'Dishware', 'Dish', 'Produce', 'European cuisine',
-                'Flammekueche', 'Vegetarian cuisine'];
+                'Flammekueche', 'Vegetarian cuisine', 'Dish Network', 'Mitsui cuisine M', 'Jamaican cuisine',
+                'Meal', 'Salad', 'Meal preparation', 'Dinner', 'Lunch', 'Restaurant', 'Healthy diet', 'Low-carbohydrate diet',
+                'Ketogenic diet'];
 
             // filter the analyzer response
             if (responseJson.responses && responseJson.responses[0] && responseJson.responses[0].webDetection ) {
@@ -337,7 +352,7 @@ export default class CameraRoll extends React.Component {
 
             // Get nutrients details
             let nutrientsResponse = await fetch(
-                'https://api.edamam.com/api/recipes/v2?app_id=8ea76b8a&app_key=d1e291d291d34d9d2eb4b26fddd3cbc1&type=public&q=' + detectedFood,
+                'https://api.edamam.com/api/recipes/v2?app_id=a69a1703&app_key=f6893e16edff060f03f0273ef47c22d0&type=public&q=' + detectedFood,
                 {
                     headers: {
                         "Accept-Encoding": 'gzip'
@@ -345,7 +360,6 @@ export default class CameraRoll extends React.Component {
                     method: 'GET'
                 }
             );
-
             let nutrientsJSON = await nutrientsResponse.json();
             let nutrientsTableData = [
                 [nutrientsJSON.hits[0].recipe.totalNutrients["CHOCDF"].label, nutrientsJSON.hits[0].recipe.totalNutrients["CHOCDF"].quantity.toFixed(2), nutrientsJSON.hits[0].recipe.totalNutrients["CHOCDF"].unit],
@@ -366,6 +380,7 @@ export default class CameraRoll extends React.Component {
                 loading: false,
                 restaurantsListView: []
             });
+            console.log(this.state.tableData);
             this.getCurrentLocationAndRestaurantsInYourArea();
         } catch (error) {
             console.log(error);
@@ -426,6 +441,29 @@ export default class CameraRoll extends React.Component {
             // console.log('Snapshot', snapshot);
         });
     };
+
+    addToFavorites(restaurantsInYourArea) {
+        const dateObj = new Date();
+        const month = dateObj.getMonth();
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        const output = day + '/' + month + '/' + year;
+
+        let id = Date.now();
+        firebase.database().ref('/history/' + id).set({
+            image: this.state.image,
+            food: this.state.detectedFood,
+            nutrients: this.state.tableData,
+            restaurantsList: restaurantsInYourArea,
+            recommendedDrink: this.state.recommendedDrink,
+            recommendedFood: this.state.recommendedFood,
+            date: output,
+            user: this.state.currentUser.uid,
+            id: id
+        }).then(snapshot => {
+            // console.log('Snapshot', snapshot);
+        });
+    }
 }
 
 async function uploadImageAsync(uri) {
@@ -487,8 +525,7 @@ const styles = StyleSheet.create({
     },
 
     helpContainer: {
-        marginTop: 15,
-        height: height
+        marginTop: 15
     },
 
     header: { height: 50, backgroundColor: '#537791' },

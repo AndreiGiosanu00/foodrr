@@ -36,8 +36,7 @@ class HistoryScreen extends Component {
                 if (snapshot.val() !== null) {
                     this.state.foodsScanned = Object.values(snapshot.val());
                 } else {
-                    this.state.noHistory = true;
-                    console.log('da')
+                    this.setState({noHistory: true})
                 }
             });
     }
@@ -49,6 +48,7 @@ class HistoryScreen extends Component {
                     this.state.foodsScanned = Object.values(snapshot.val());
                 } else {
                     this.state.noHistory = true;
+                    console.log('da from mount')
                 }
             });
     }
@@ -60,6 +60,7 @@ class HistoryScreen extends Component {
                     this.state.foodsScanned = Object.values(snapshot.val());
                 } else {
                     this.state.noHistory = true;
+                    console.log('da from update')
                 }
             });
     }
