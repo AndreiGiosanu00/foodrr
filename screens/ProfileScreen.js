@@ -8,57 +8,195 @@ import {
     TouchableRipple, TextInput,
 } from 'react-native-paper';
 
+import {
+    LineChart,
+    BarChart,
+    PieChart,
+    ProgressChart,
+    ContributionGraph,
+    StackedBarChart
+} from "react-native-chart-kit";
+
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {Row, Rows, Table} from "react-native-table-component";
-import {ScrollView} from "react-native-gesture-handler";
+import firebase from "firebase";
 
 const {width, height} = Dimensions.get('window');
 
 class ProfileScreen extends Component {
-    state = {
-        modalShow: false
-    };
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    constructor(props) {
+        super(props);
+        this.state = {
+            profileModalShow: false,
+            chartModalShow: false,
+            loading: false,
+            currentUser: firebase.auth().currentUser,
+            displayUser: {
+                name: '',
+                location: '',
+                phone: '',
+                email: '',
+                photo: '',
+                username: ''
+            },
+            totalCaloriesPerDay: 0,
+            totalScans: 0
+        };
     }
 
     componentDidMount() {
+        firebase.database().ref('/analyzed_food/')
+            .on('value', snapshot => {
+                if (snapshot.val() !== null) {
+                    this.state.analyzedFood = Object.values(snapshot.val());
+                    let totalCalories = 0;
+                    this.state.analyzedFood.forEach(foodItem => {
+                        if (foodItem.user === this.state.currentUser.uid) {
+                            this.state.totalScans++;
+                            if (foodItem.date === '06/8/2021') {
+                                this.state.totalCaloriesPerDay += (+foodItem.nutrients[1][1]);
+                            }
+                        }
+                    });
+                    console.log('da: ' + totalCalories);
+                    this.setState({loading: false, profileModalShow: false, displayUser: {
+                            name: this.state.currentUser.displayName,
+                            location: 'Bucharest, Romania',
+                            phone: '+40 753 844 087',
+                            email: this.state.currentUser.email,
+                            username: this.createUsername(),
+                            totalCaloriesPerDay: totalCalories
+                        }});
+                } else {
+                    this.setState({loading: false, profileModalShow: false, displayUser: {
+                            name: this.state.currentUser.displayName,
+                            location: 'Bucharest, Romania',
+                            phone: '+40 753 844 087',
+                            email: this.state.currentUser.email,
+                            username: this.createUsername(),
+                            totalCaloriesPerDay: 0
+                        }});
+                }
+            });
     }
 
-
-    changeModalState(value) {
-        this.state.modalShow = value;
+    changeModalState(state) {
+        this.setState({profileModalShow: state, displayUser: {
+                name: this.state.currentUser.displayName,
+                location: 'Bucharest, Romania',
+                phone: '+40 753 844 087',
+                email: this.state.currentUser.email,
+                username: this.createUsername()
+            }});
     }
 
-    closeModal() {
-        this.state.modalShow = false;
+    changeChartModalState(state) {
+        this.setState({chartModalShow: state});
+    }
+
+    createUsername() {
+        let names = this.state.currentUser.displayName.split(' ');
+        let username = names[0][0].toLowerCase() + names[1].toLowerCase();
+        return username;
     }
 
     render() {
+        let modalTrigger = [
+            <TouchableRipple onPress={() => {this.changeModalState(true)}}>
+                <View style={styles.menuItem}>
+                    <Icon name="account-check-outline" color="#4285F4" size={25}/>
+                    <Text style={styles.menuItemText}>Change your profile details</Text>
+                </View>
+            </TouchableRipple>
+        ];
         return (
             <SafeAreaView style={styles.container}>
+                {/*kcal chart*/}
+                <Modal animationType="slide"
+                       transparent={true}
+                       visible={this.state.chartModalShow}>
+                    <View style={styles.centeredView}>
+                        <View style={styles.modalView}>
+                            <Text style={{color: '#777777', fontWeight: 'bold', textAlign: 'center', fontSize: 20}}>Your last week calories report</Text>
+                            <TouchableRipple
+                                style={[styles.button, styles.buttonClose]}
+                                onPress={() => this.changeChartModalState(false)}
+                            >
+                                <Icon name="close" color="white" size={15}/>
+                            </TouchableRipple>
+                            <View style={styles.modalContent}>
+                                <Text style={{textAlign: 'center', color: '#777777'}}>Below is presented a chart that contains data from the last week using Foodrr application.
+                                    Please consider that the values are rounded to have a clear view of the chart.
+                                </Text>
+                                <Text style={{marginTop: 15, color: '#777777', fontWeight: 'bold', fontSize: 15, textAlign: 'center'}}>@{this.state.displayUser.username}'s calories chart</Text>
+                                <LineChart
+                                    data={{
+                                        labels: ["02/09", "03/09", "04/09", "05/09", "Yesterday", "Today"],
+                                        datasets: [
+                                            {
+                                                data: [
+                                                    0,
+                                                    0,
+                                                    1375,
+                                                    840,
+                                                    2590.32,
+                                                    this.state.totalCaloriesPerDay
+                                                ]
+                                            }
+                                        ]
+                                    }}
+                                    width={Dimensions.get("window").width - 30} // from react-native
+                                    height={350}
+                                    yAxisSuffix="kcal"
+                                    yAxisInterval={1} // optional, defaults to 1
+                                    chartConfig={{
+                                        backgroundColor: "#4285F4",
+                                        backgroundGradientFrom: "#4285F4",
+                                        backgroundGradientTo: "#4285F4",
+                                        decimalPlaces: 0, // optional, defaults to 2dp
+                                        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                                        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                                        style: {
+                                            borderRadius: 16
+                                        },
+                                        propsForDots: {
+                                            r: "6",
+                                            strokeWidth: "2",
+                                            stroke: "#777777"
+                                        }
+                                    }}
+                                    bezier
+                                    style={{
+                                        marginVertical: 8,
+                                        borderRadius: 16
+                                    }}
+                                />
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+
                 {/*Change user data Modal*/}
                 <Modal animationType="slide"
                        transparent={true}
-                       visible={this.state.modalShow}>
+                       visible={this.state.profileModalShow}>
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
                             <Text style={{color: '#777777', fontWeight: 'bold', textAlign: 'center', fontSize: 20}}>Change your profile details</Text>
                             <TouchableRipple
                                 style={[styles.button, styles.buttonClose]}
-                                onPress={() => this.closeModal()}
+                                onPress={() => this.changeModalState(false)}
                             >
                                 <Icon name="close" color="white" size={15}/>
                             </TouchableRipple>
                             <View style={styles.modalContent}>
                                 <Text style={styles.inputLabel}>Your name</Text>
-                                <TextInput placeholder={'Andrei Giosanu'} style={styles.textInput} value={'Andrei Giosanu'}/>
+                                <TextInput placeholder={'Name...'} style={styles.textInput} value={this.state.displayUser.name}/>
                                 <Text style={styles.inputLabel}>Your username</Text>
-                                <TextInput placeholder={'agiosanu'} style={styles.textInput} value={'agiosanu'}/>
+                                <TextInput placeholder={'Username...'} style={styles.textInput} value={this.state.displayUser.username}/>
                                 <Text style={styles.inputLabel}>Your location</Text>
-                                <TextInput placeholder={'Bucharest, Romania'} style={styles.textInput} value={'Bucharest, Romania'}/>
+                                <TextInput placeholder={'Location...'} style={styles.textInput} value={this.state.displayUser.location}/>
                                 <Text style={styles.inputLabel}>Your email</Text>
-                                <TextInput placeholder={'Email'} style={styles.textInput} value={'andreigiosanu0@gmail.com'}/>
+                                <TextInput placeholder={'Email...'} style={styles.textInput} value={this.state.displayUser.email}/>
                                 <Text style={styles.inputLabel}>Your new password</Text>
                                 <TextInput placeholder={'New Password...'} style={styles.textInput}/>
                                 <Text style={styles.inputLabel}>Please confirm your new password</Text>
@@ -80,8 +218,8 @@ class ProfileScreen extends Component {
                             <Title style={[styles.title, {
                                 marginTop:15,
                                 marginBottom: 5,
-                            }]}>Andrei Giosanu</Title>
-                            <Caption style={styles.caption}>@agiosanu</Caption>
+                            }]}>{this.state.displayUser.name}</Title>
+                            <Caption style={styles.caption}>@{this.state.displayUser.username}</Caption>
                         </View>
                     </View>
                 </View>
@@ -89,7 +227,7 @@ class ProfileScreen extends Component {
                 <View style={styles.userInfoSection}>
                     <View style={styles.row}>
                         <Icon name="map-marker-radius" color="#777777" size={20}/>
-                        <Text style={{color:"#777777", marginLeft: 20}}>Bucharest, Romania</Text>
+                        <Text style={{color:"#777777", marginLeft: 20}}>{this.state.displayUser.location}</Text>
                     </View>
                     <View style={styles.row}>
                         <Icon name="phone" color="#777777" size={20}/>
@@ -97,7 +235,7 @@ class ProfileScreen extends Component {
                     </View>
                     <View style={styles.row}>
                         <Icon name="email" color="#777777" size={20}/>
-                        <Text style={{color:"#777777", marginLeft: 20}}>andreigiosanu0@gmail.com</Text>
+                        <Text style={{color:"#777777", marginLeft: 20}}>{this.state.displayUser.email}</Text>
                     </View>
                 </View>
 
@@ -106,30 +244,25 @@ class ProfileScreen extends Component {
                         borderRightColor: '#dddddd',
                         borderRightWidth: 1
                     }]}>
-                        <Title>450 kcal</Title>
+                        <TouchableRipple onPress={() => {this.changeChartModalState(true)}}>
+                            <Title>{this.state.totalCaloriesPerDay} kcal</Title>
+                        </TouchableRipple>
                         <Caption>Today's kcal</Caption>
                     </View>
                     <View style={styles.infoBox}>
-                        <Title>7</Title>
+                        <Title>{this.state.totalScans}</Title>
                         <Caption>Total scans</Caption>
                     </View>
                 </View>
 
                 <View style={styles.menuWrapper}>
-                    <TouchableRipple onPress={() => {}}>
+                    <TouchableRipple onPress={() => {this.props.navigation.navigate('FavoritesScreen')}}>
                         <View style={styles.menuItem}>
                             <Icon name="heart-outline" color="#4285F4" size={25}/>
                             <Text style={styles.menuItemText}>Your Favorites</Text>
                         </View>
                     </TouchableRipple>
-                    <TouchableRipple onPress={() => {}}>
-                        <View style={styles.menuItem}>
-                            <Icon name="account-check-outline" color="#4285F4" size={25}/>
-                            <TouchableRipple onPress={this.changeModalState(true)}>
-                                <Text style={styles.menuItemText}>Change your profile details</Text>
-                            </TouchableRipple>
-                        </View>
-                    </TouchableRipple>
+                    {modalTrigger}
                 </View>
             </SafeAreaView>
         );

@@ -34,7 +34,8 @@ class DashboardScreen extends Component {
                 restaurantsList: []
             },
             tableHead: ['Nutrient', 'Quantity', 'Unit'],
-            dashboardContent: []
+            dashboardContent: [],
+            totalCaloriesPerDay: 0
         };
     }
 
@@ -44,6 +45,7 @@ class DashboardScreen extends Component {
                 if (snapshot.val() !== null) {
                     this.state.analyzedFood = Object.values(snapshot.val());
                     let dashboardContent = [];
+                    let totalCalories = 0;
                     this.state.analyzedFood.forEach(foodItem => {
                         if (foodItem.user === this.state.currentUser.uid) {
                             dashboardContent.push(
@@ -69,9 +71,13 @@ class DashboardScreen extends Component {
                                     </View>
                                 </View>
                             );
+
+                            if (foodItem.date === '06/8/2021') {
+                                totalCalories += (+foodItem.nutrients[1][1]);
+                            }
                         }
                     });
-                    this.setState({dashboardContent: dashboardContent});
+                    this.setState({dashboardContent: dashboardContent, totalCaloriesPerDay: totalCalories});
                 } else {
                     this.state.noHistory = true;
                 }
