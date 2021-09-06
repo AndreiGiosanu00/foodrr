@@ -32,17 +32,19 @@ class HistoryScreen extends Component {
             modalShow: false,
             tableHead: ['Nutrient', 'Quantity', 'Unit'],
             loading: false,
+            currentUser: firebase.auth().currentUser,
         };
     }
 
     componentDidMount() {
-        this.setState({loading: false});
         firebase.database().ref('/history/')
             .on('value', snapshot => {
                 if (snapshot.val() !== null) {
                     this.state.foodsScanned = Object.values(snapshot.val());
+                    this.setState({loading: false});
                 } else {
                     this.state.noHistory = true;
+                    this.setState({loading: false});
                 }
             });
     }
@@ -118,36 +120,38 @@ class HistoryScreen extends Component {
         } else {
             let foodItemsView = [];
             this.state.foodsScanned.forEach(foodItem => {
-                foodItemsView.push(
-                    <View style={styles.foodItem}>
-                        <Image style={styles.foodImage} source={{uri: foodItem.image}}/>
-                        <View style={{marginLeft: 15}}>
-                            <View style={{flexDirection: 'row', marginLeft: 50}}>
-                                <Text style={{fontWeight: 'bold', fontSize: 20, color: '#777777', textAlign: 'center', marginRight: 15}}>
-                                    {foodItem.food}
-                                </Text>
-                                <TouchableRipple onPress={() => {this.deleteItemFromHistory(foodItem.id)}}>
-                                    <Icon name="close-box" color="#4285F4" size={25} style={{padding: 2}} />
+                if (foodItem.user === this.state.currentUser.uid) {
+                    foodItemsView.push(
+                        <View style={styles.foodItem}>
+                            <Image style={styles.foodImage} source={{uri: foodItem.image}}/>
+                            <View style={{marginLeft: 15}}>
+                                <View style={{flexDirection: 'row', marginLeft: 50}}>
+                                    <Text style={{fontWeight: 'bold', fontSize: 20, color: '#777777', textAlign: 'center', marginRight: 15}}>
+                                        {foodItem.food}
+                                    </Text>
+                                    <TouchableRipple onPress={() => {this.deleteItemFromHistory(foodItem.id)}}>
+                                        <Icon name="close-box" color="#4285F4" size={25} style={{padding: 2}} />
+                                    </TouchableRipple>
+                                </View>
+                                <View style={{flexDirection: 'row', marginTop: 10}}>
+                                    <Icon name="calculator-variant" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
+                                    <Text style={{color: '#777777' , fontSize: 15}}>{foodItem.nutrients[1][1]} kcal</Text>
+                                </View>
+
+                                <View style={{flexDirection: 'row', marginTop: 10}}>
+                                    <Icon name="calendar" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
+                                    <Text style={{color: '#777777', fontSize: 15}}>{foodItem.date}</Text>
+                                </View>
+                                <TouchableRipple onPress={() => {this.openModal(foodItem)}} style={{padding: 5, marginTop: 5, marginLeft: 45}}>
+                                    <View style={{flexDirection: 'row'}}>
+                                        <Icon name="unfold-more-vertical" color="#4285F4" size={25}/>
+                                        <Text style={{color: '#4285F4', fontWeight: 'bold', marginLeft: 10, fontSize: 15}}>More details</Text>
+                                    </View>
                                 </TouchableRipple>
                             </View>
-                            <View style={{flexDirection: 'row', marginTop: 10}}>
-                                <Icon name="calculator-variant" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
-                                <Text style={{color: '#777777' , fontSize: 15}}>{foodItem.nutrients[1][1]} kcal</Text>
-                            </View>
-
-                            <View style={{flexDirection: 'row', marginTop: 10}}>
-                                <Icon name="calendar" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
-                                <Text style={{color: '#777777', fontSize: 15}}>{foodItem.date}</Text>
-                            </View>
-                            <TouchableRipple onPress={() => {this.openModal(foodItem)}} style={{padding: 5, marginTop: 5, marginLeft: 45}}>
-                                <View style={{flexDirection: 'row'}}>
-                                    <Icon name="unfold-more-vertical" color="#4285F4" size={25}/>
-                                    <Text style={{color: '#4285F4', fontWeight: 'bold', marginLeft: 10, fontSize: 15}}>More details</Text>
-                                </View>
-                            </TouchableRipple>
                         </View>
-                    </View>
-                );
+                    );
+                }
             });
             return (
                 <SafeAreaView style={styles.container}>
