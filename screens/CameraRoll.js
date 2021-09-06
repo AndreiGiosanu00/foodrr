@@ -69,7 +69,7 @@ export default class CameraRoll extends React.Component {
                     });
                 });
                 this.saveAnalyzedFoodData(this.restaurantsInYourArea);
-                this.setState({loading: false});
+                this.setState({loading: false, uploading: false});
             })
             .catch((error) => {
                 alert('Something went wrong! Please try again.')
@@ -373,7 +373,7 @@ export default class CameraRoll extends React.Component {
             this.setState({
                 googleResponse: analyzerResponses,
                 nutrientsResponse: nutrientsJSON.hits[0].recipe.totalNutrients,
-                uploading: false,
+                uploading: true,
                 tableHead: ['Nutrient', 'Quantity', 'Unit'],
                 tableData: nutrientsTableData,
                 detectedFood: detectedFood,
@@ -450,7 +450,7 @@ export default class CameraRoll extends React.Component {
         const output = day + '/' + month + '/' + year;
 
         let id = Date.now();
-        firebase.database().ref('/history/' + id).set({
+        firebase.database().ref('/favorites/' + id).set({
             image: this.state.image,
             food: this.state.detectedFood,
             nutrients: this.state.tableData,

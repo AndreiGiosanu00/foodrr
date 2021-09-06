@@ -17,6 +17,8 @@ class DashboardScreen extends Component {
             loading: false,
             noHistory: false,
             modalShow: false,
+            recommendModalShow: false,
+            recommendExpandedModalShow: false,
             currentUser: firebase.auth().currentUser,
             foodItem: {
                 food: 'Chicken salad',
@@ -28,29 +30,12 @@ class DashboardScreen extends Component {
                     ['Saturated', 88, 'g'],
                     ['Protein', 32, 'g'],
                     ['Sodium', 680, 'mg']
-                ]
+                ],
+                restaurantsList: []
             },
-            tableHead: ['Nutrient', 'Quantity', 'Unit']
+            tableHead: ['Nutrient', 'Quantity', 'Unit'],
+            dashboardContent: []
         };
-        firebase.database().ref('/analyzed_food/')
-            .on('value', snapshot => {
-                if (snapshot.val() !== null) {
-                    this.state.analyzedFood = Object.values(snapshot.val());
-                } else {
-                    this.state.noHistory = true;
-                }
-            });
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        firebase.database().ref('/analyzed_food/')
-            .on('value', snapshot => {
-                if (snapshot.val() !== null) {
-                    this.state.analyzedFood = Object.values(snapshot.val());
-                } else {
-                    this.state.noHistory = true;
-                }
-            });
     }
 
     componentDidMount() {
@@ -58,23 +43,108 @@ class DashboardScreen extends Component {
             .on('value', snapshot => {
                 if (snapshot.val() !== null) {
                     this.state.analyzedFood = Object.values(snapshot.val());
+                    let dashboardContent = [];
+                    this.state.analyzedFood.forEach(foodItem => {
+                        if (foodItem.user === this.state.currentUser.uid) {
+                            dashboardContent.push(
+                                <View style={styles.foodItem}>
+                                    <Image style={styles.foodImage} source={{uri: foodItem.image}}/>
+                                    <View style={{marginLeft: 15}}>
+                                        <Text style={{fontWeight: 'bold', fontSize: 20, color: '#777777', textAlign: 'center'}}>{foodItem.food}</Text>
+                                        <View style={{flexDirection: 'row', marginTop: 10}}>
+                                            <Icon name="calculator-variant" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
+                                            <Text style={{color: '#777777' , fontSize: 15}}>{foodItem.nutrients[1][1]} kcal</Text>
+                                        </View>
+
+                                        <View style={{flexDirection: 'row', marginTop: 10}}>
+                                            <Icon name="calendar" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
+                                            <Text style={{color: '#777777', fontSize: 15}}>{foodItem.date}</Text>
+                                        </View>
+                                        <TouchableRipple onPress={() => {this.openModal(foodItem)}} style={{padding: 5, marginTop: 5, marginLeft: 45}}>
+                                            <View style={{flexDirection: 'row'}}>
+                                                <Icon name="unfold-more-vertical" color="#4285F4" size={25}/>
+                                                <Text style={{color: '#4285F4', fontWeight: 'bold', marginLeft: 10, fontSize: 15}}>More details</Text>
+                                            </View>
+                                        </TouchableRipple>
+                                    </View>
+                                </View>
+                            );
+                        }
+                    });
+                    this.setState({dashboardContent: dashboardContent});
                 } else {
                     this.state.noHistory = true;
                 }
             });
-    }
 
-    changeModalState(value) {
-        this.setState({modalShow: value});
+        setInterval(() => {
+            if (!this.state.recommendModalShow) {
+                this.setState({recommendModalShow: true});
+            }
+        }, 120000);
     }
 
     openModal(foodItem) {
+        this.state.foodItem = foodItem;
+        this.state.restaurantsListView = [];
+        if (!foodItem.restaurantsList) {
+            this.state.restaurantsListView.push(
+                <View>
+                    <Text style={{textAlign: 'center'}}>There are no restaurants in your area serving this type of food.</Text>
+                </View>
+            )
+        } else {
+            foodItem.restaurantsList.forEach(restaurant => {
+                this.state.restaurantsListView.push(
+                    <View style={{marginTop: 5, borderBottomColor: '#dddddd', borderBottomWidth: 1, padding: 5}}>
+                        <View style={{flexDirection: 'row'}}>
+                            <Image style={{width: 50, height: 50}} source={{uri:  restaurant.icon}}/>
+                            <Text style={{fontWeight: 'bold', fontSize: 18, marginTop: 10, marginLeft: 15}}>{restaurant.name}</Text>
+                            <TouchableRipple style={{backgroundColor: '#4285F4', color: 'white', paddingBottom: 5,
+                                paddingTop: 5, alignItems: 'center', borderRadius: 50, width: 120, height: 35, marginLeft: 30,
+                                marginTop: 5}} onPress={() => Linking.openURL('google.navigation:q=' + restaurant.vicinity)}>
+                                <Text style={{color: 'white', fontWeight: 'bold'}}>Navigate <Icon name="google-maps" color="white" size={20}/></Text>
+                            </TouchableRipple>
+                        </View>
+                        <Text style={{color: '#777777'}}>
+                            <Text style={{fontWeight: 'bold'}}> Location:</Text> {restaurant.vicinity} -  <Text style={{fontWeight: 'bold'}}>
+                            {this.getDistanceFromLatLonInKm(this.latitude, this.longitude,
+                                restaurant.location.lat, restaurant.location.lng).toFixed(2)}km from your current location
+                        </Text>
+                        </Text>
+                    </View>
+
+                )
+            });
+        }
         this.setState({modalShow: true});
     }
 
     closeModal() {
         this.setState({modalShow: false});
     }
+
+    closeRecommendModal() {
+        this.setState({recommendModalShow: false});
+    }
+
+    getDistanceFromLatLonInKm = (lat1,lon1,lat2,lon2) => {
+        let R = 6371; // Radius of the earth in km
+        let dLat = this.deg2rad(lat2-lat1);  // deg2rad below
+        let dLon = this.deg2rad(lon2-lon1);
+        let a =
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+            Math.sin(dLon/2) * Math.sin(dLon/2)
+        ;
+        let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        let d = R * c; // Distance in km
+        return d;
+    };
+
+    deg2rad = (deg) => {
+        return deg * (Math.PI/180)
+    };
 
     render() {
         if (this.state.noHistory) {
@@ -114,13 +184,13 @@ class DashboardScreen extends Component {
                 {/*Try this dish Modal*/}
                 <Modal animationType="slide"
                        transparent={true}
-                       visible={false}>
+                       visible={this.state.recommendModalShow}>
                     <View style={[styles.centeredView, {marginLeft: 45, marginTop: -500}]}>
                         <View style={[styles.modalView, {height: 100, width: width - 100}]}>
                             <View style={{flexDirection: 'row'}}>
                                 <TouchableRipple
                                     style={{backgroundColor: '#4285F4', padding: 5, width: 25, height: 25, color: 'white', borderRadius: 50, marginRight: 15}}
-                                    onPress={() => this.closeModal()}
+                                    onPress={() => this.closeRecommendModal()}
                                 >
                                     <Icon name="close" color="white" size={15} style={{fontWeight: 'bold'}}/>
                                 </TouchableRipple>
@@ -136,16 +206,14 @@ class DashboardScreen extends Component {
                         </View>
                     </View>
                 </Modal>
-
-                {/*More details Modal*/}
+                {/*Trey this food expanded Modal*/}
                 <Modal animationType="slide"
                        transparent={true}
-                       visible={this.state.modalShow}>
+                       visible={this.state.recommendExpandedModalShow}>
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
                             <Text style={styles.modalTitle}>Shrimp salad</Text>
                             <Image style={{width: 75, height: 75, borderRadius: 50}} source={{uri: 'https://www.foodiecrush.com/wp-content/uploads/2017/07/Citrus-Shrimp-Avocado-Salad-foodiecrush.com-001.jpg'}}/>
-                            {/*<Text style={styles.modalText}>Below you will find more details about your food that was scanned using our app</Text>*/}
                             <Text style={styles.modalText}>Try this food that was found using our recommendation system</Text>
                             <TouchableRipple
                                 style={[styles.button, styles.buttonClose]}
@@ -154,7 +222,6 @@ class DashboardScreen extends Component {
                                 <Icon name="close" color="white" size={15}/>
                             </TouchableRipple>
                             <View style={styles.modalContent}>
-                                {/*<Text style={{color: '#777777', fontWeight: 'bold'}}>Date: <Text style={{fontWeight: 'normal'}}>{this.state.foodItem.date}</Text></Text>*/}
                                 <View style={styles.nutrientsTable}>
                                     <Text style={{color: '#777777', fontWeight: 'bold', textAlign: 'center', marginBottom: 5}}>Nutrients</Text>
                                     <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
@@ -191,104 +258,76 @@ class DashboardScreen extends Component {
                         </View>
                     </View>
                 </Modal>
+
+                {/*More details Modal*/}
+                <Modal animationType="slide"
+                       transparent={true}
+                       visible={this.state.modalShow}>
+                    <View style={styles.centeredView}>
+                        <View style={styles.modalView}>
+                            <Text style={styles.modalTitle}>{this.state.foodItem.food}</Text>
+                            <Image style={{width: 85, height: 85, borderRadius: 25}} source={{uri: this.state.foodItem.image}}/>
+                            <Text style={styles.modalText}>Below you will find more details about your food that was scanned using our app</Text>
+                            <TouchableRipple
+                                style={[styles.button, styles.buttonClose]}
+                                onPress={() => this.closeModal()}
+                            >
+                                <Icon name="close" color="white" size={15}/>
+                            </TouchableRipple>
+                            <View style={styles.modalContent}>
+                                <View style={styles.nutrientsTable}>
+                                    <Text style={{color: '#777777', fontWeight: 'bold', textAlign: 'center', marginBottom: 5}}>Nutrients</Text>
+                                    <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
+                                        <Row data={this.state.tableHead} style={styles.head} textStyle={styles.text}/>
+                                        <Rows data={this.state.foodItem.nutrients} textStyle={styles.text}/>
+                                    </Table>
+                                </View>
+                                <Text style={{fontWeight: 'bold', color: '#777777'}}>Our recommendation:</Text>
+                                <Text style={{color: '#777777'}}>This dish goes well with {this.state.foodItem.recommendedDrink} and some {this.state.foodItem.recommendedFood} on the side.</Text>
+                                <Text style={{color: '#777777', fontWeight: 'bold', marginTop: 5}}>Restaurants in your area that serve this food:</Text>
+                                <ScrollView style={{maxHeight: 130, marginTop: 5}}>
+                                    {this.state.restaurantsListView}
+                                </ScrollView>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+
                 <View style={styles.title}>
                     <Text style={{fontWeight: 'bold', fontSize: 25}}>Welcome to Foodrr</Text>
                     <Text style={{fontSize: 15, color: '#777777'}}>Below you can find your latest scans</Text>
                 </View>
                 <ScrollView style={styles.foodsContainer}>
                     <View style={styles.foodsDateContainer}>
-                        <Text style={{fontSize: 15, color: '#777777', fontWeight: 'bold', marginLeft: 5}}>Scans from 27/08/2021</Text>
-                        <View style={styles.foodItem}>
-                            <Image style={styles.foodImage} source={{uri: 'https://simply-delicious-food.com/wp-content/uploads/2021/03/Sesame-chicken-salad-3.jpg'}}/>
-                            <View style={{marginLeft: 15}}>
-                                <Text style={{fontWeight: 'bold', fontSize: 20, color: '#777777', textAlign: 'center'}}>Chicken salad</Text>
-                                <View style={{flexDirection: 'row', marginTop: 10}}>
-                                    <Icon name="calculator-variant" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
-                                    <Text style={{color: '#777777' , fontSize: 15}}>450 kcal</Text>
-                                </View>
-
-                                <View style={{flexDirection: 'row', marginTop: 10}}>
-                                    <Icon name="calendar" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
-                                    <Text style={{color: '#777777', fontSize: 15}}>27/08/2021</Text>
-                                </View>
-                                <TouchableRipple onPress={() => {this.changeModalState(true);}} style={{padding: 5, marginTop: 5, marginLeft: 45}}>
-                                    <View style={{flexDirection: 'row'}}>
-                                        <Icon name="unfold-more-vertical" color="#4285F4" size={25}/>
-                                        <Text style={{color: '#4285F4', fontWeight: 'bold', marginLeft: 10, fontSize: 15}}>More details</Text>
-                                    </View>
-                                </TouchableRipple>
-                            </View>
-                        </View>
+                        <Text style={{fontSize: 15, color: '#777777', fontWeight: 'bold', marginLeft: 5}}>Scans from 06/09/2021</Text>
+                        {this.state.dashboardContent}
                     </View>
-                    <View style={styles.foodsDateContainer}>
-                        <Text style={{fontSize: 15, color: '#777777', fontWeight: 'bold', marginLeft: 5}}>Scans from 26/08/2021</Text>
-                        <View style={styles.foodItem}>
-                            <Image style={styles.foodImage} source={{uri: 'https://s3.amazonaws.com/cms.ipressroom.com/67/files/20125/4ffe088229371a067f00000f_Milk_in_glass_verticle_from_above/Milk_in_glass_verticle_from_above_225d0276-39e4-4370-bb12-580776bf9b96-prv.jpg'}}/>
-                            <View style={{marginLeft: 15}}>
-                                <Text style={{fontWeight: 'bold', fontSize: 20, color: '#777777', textAlign: 'center'}}>Milk</Text>
-                                <View style={{flexDirection: 'row', marginTop: 10}}>
-                                    <Icon name="calculator-variant" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
-                                    <Text style={{color: '#777777' , fontSize: 15}}>90 kcal</Text>
-                                </View>
-
-                                <View style={{flexDirection: 'row', marginTop: 10}}>
-                                    <Icon name="calendar" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
-                                    <Text style={{color: '#777777', fontSize: 15}}>26/08/2021</Text>
-                                </View>
-                                <TouchableRipple onPress={() => {this.changeModalState(true);}} style={{padding: 5, marginTop: 5, marginLeft: 45}}>
-                                    <View style={{flexDirection: 'row'}}>
-                                        <Icon name="unfold-more-vertical" color="#4285F4" size={25}/>
-                                        <Text style={{color: '#4285F4', fontWeight: 'bold', marginLeft: 10, fontSize: 15}}>More details</Text>
+                    {(this.state.currentUser.uid === "8W8XUDl06DNCFQ5qJDHjPkqpFwd2") ?
+                        <View style={styles.foodsDateContainer}>
+                            <Text style={{fontSize: 15, color: '#777777', fontWeight: 'bold', marginLeft: 5}}>Scans from 05/09/2021</Text>
+                            <View style={styles.foodItem}>
+                                <Image style={styles.foodImage} source={{uri: 'https://s3.amazonaws.com/cms.ipressroom.com/67/files/20125/4ffe088229371a067f00000f_Milk_in_glass_verticle_from_above/Milk_in_glass_verticle_from_above_225d0276-39e4-4370-bb12-580776bf9b96-prv.jpg'}}/>
+                                <View style={{marginLeft: 15}}>
+                                    <Text style={{fontWeight: 'bold', fontSize: 20, color: '#777777', textAlign: 'center'}}>Milk</Text>
+                                    <View style={{flexDirection: 'row', marginTop: 10}}>
+                                        <Icon name="calculator-variant" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
+                                        <Text style={{color: '#777777' , fontSize: 15}}>90 kcal</Text>
                                     </View>
-                                </TouchableRipple>
+
+                                    <View style={{flexDirection: 'row', marginTop: 10}}>
+                                        <Icon name="calendar" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
+                                        <Text style={{color: '#777777', fontSize: 15}}>05/09/2021</Text>
+                                    </View>
+                                    <TouchableRipple onPress={() => {}} style={{padding: 5, marginTop: 5, marginLeft: 45}}>
+                                        <View style={{flexDirection: 'row'}}>
+                                            <Icon name="unfold-more-vertical" color="#4285F4" size={25}/>
+                                            <Text style={{color: '#4285F4', fontWeight: 'bold', marginLeft: 10, fontSize: 15}}>More details</Text>
+                                        </View>
+                                    </TouchableRipple>
+                                </View>
                             </View>
                         </View>
-                        <View style={styles.foodItem}>
-                            <Image style={styles.foodImage} source={{uri: 'https://twisper.com/wp-content/uploads/2020/03/close-up-photo-of-burger-3915906-scaled.jpg'}}/>
-                            <View style={{marginLeft: 15}}>
-                                <Text style={{fontWeight: 'bold', fontSize: 20, color: '#777777', textAlign: 'center'}}>Burger</Text>
-                                <View style={{flexDirection: 'row', marginTop: 10}}>
-                                    <Icon name="calculator-variant" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
-                                    <Text style={{color: '#777777' , fontSize: 15}}>1630 kcal</Text>
-                                </View>
-
-                                <View style={{flexDirection: 'row', marginTop: 10}}>
-                                    <Icon name="calendar" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
-                                    <Text style={{color: '#777777', fontSize: 15}}>26/08/2021</Text>
-                                </View>
-                                <TouchableRipple onPress={() => {this.changeModalState(true);}} style={{padding: 5, marginTop: 5, marginLeft: 45}}>
-                                    <View style={{flexDirection: 'row'}}>
-                                        <Icon name="unfold-more-vertical" color="#4285F4" size={25}/>
-                                        <Text style={{color: '#4285F4', fontWeight: 'bold', marginLeft: 10, fontSize: 15}}>More details</Text>
-                                    </View>
-                                </TouchableRipple>
-                            </View>
-                        </View>
-                    </View>
-                    <View style={styles.foodsDateContainer}>
-                        <Text style={{fontSize: 15, color: '#777777', fontWeight: 'bold', marginLeft: 5}}>Scans from 20/08/2021</Text>
-                        <View style={styles.foodItem}>
-                            <Image style={styles.foodImage} source={require('../assets/foodrr-logo.png')}/>
-                            <View style={{marginLeft: 15}}>
-                                <Text style={{fontWeight: 'bold', fontSize: 20, color: '#777777', textAlign: 'center'}}>Pasta</Text>
-                                <View style={{flexDirection: 'row', marginTop: 10}}>
-                                    <Icon name="calculator-variant" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
-                                    <Text style={{color: '#777777' , fontSize: 15}}>1600 kcal</Text>
-                                </View>
-
-                                <View style={{flexDirection: 'row', marginTop: 10}}>
-                                    <Icon name="calendar" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
-                                    <Text style={{color: '#777777', fontSize: 15}}>25/08/2021</Text>
-                                </View>
-                                <TouchableRipple onPress={() => {this.changeModalState(true);}} style={{padding: 5, marginTop: 5, marginLeft: 45}}>
-                                    <View style={{flexDirection: 'row'}}>
-                                        <Icon name="unfold-more-vertical" color="#4285F4" size={25}/>
-                                        <Text style={{color: '#4285F4', fontWeight: 'bold', marginLeft: 10, fontSize: 15}}>More details</Text>
-                                    </View>
-                                </TouchableRipple>
-                            </View>
-                        </View>
-                    </View>
+                        : null}
                 </ScrollView>
             </SafeAreaView>
         );

@@ -31,14 +31,6 @@ class HistoryScreen extends Component {
             modalShow: false,
             tableHead: ['Nutrient', 'Quantity', 'Unit']
         };
-        firebase.database().ref('/history/')
-            .on('value', snapshot => {
-                if (snapshot.val() !== null) {
-                    this.state.foodsScanned = Object.values(snapshot.val());
-                } else {
-                    this.setState({noHistory: true})
-                }
-            });
     }
 
     componentDidMount() {
@@ -48,52 +40,8 @@ class HistoryScreen extends Component {
                     this.state.foodsScanned = Object.values(snapshot.val());
                 } else {
                     this.state.noHistory = true;
-                    console.log('da from mount')
                 }
             });
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        firebase.database().ref('/history/')
-            .on('value', snapshot => {
-                if (snapshot.val() !== null) {
-                    this.state.foodsScanned = Object.values(snapshot.val());
-                } else {
-                    this.state.noHistory = true;
-                    console.log('da from update')
-                }
-            });
-    }
-
-    openModal(foodItem) {
-        this.state.foodItem = foodItem;
-        console.log(foodItem);
-        this.state.restaurantsListView = [];
-        if (!foodItem.restaurantsList) {
-            this.state.restaurantsListView.push(
-                <View>
-                    <Text style={{textAlign: 'center'}}>There are no restaurants in your area serving this type of food.</Text>
-                </View>
-            )
-        } else {
-            foodItem.restaurantsList.forEach(restaurant => {
-                this.state.restaurantsListView.push(
-                    <View>
-                        <Image style={{width: 120, height: 120}} source={{uri: restaurant.icon}}/>
-                        <Text>{restaurant.name}</Text>
-                        <Text>Location: {restaurant.vicinity}</Text>
-                        <Text>{this.getDistanceFromLatLonInKm(this.latitude, this.longitude, restaurant.location.lat, restaurant.location.lng).toFixed(2)}km</Text>
-                        <Button title={'Go to restaurant'}
-                                onPress={() => Linking.openURL('google.navigation:q=' + restaurant.vicinity)}/>
-                    </View>
-                )
-            });
-        }
-        this.setState({modalShow: true});
-    }
-
-    closeModal() {
-        this.setState({modalShow: false});
     }
 
     render() {
@@ -142,38 +90,6 @@ class HistoryScreen extends Component {
             });
             return (
                 <SafeAreaView style={styles.container}>
-                    {/*More details Modal*/}
-                    <Modal animationType="slide"
-                           transparent={true}
-                           visible={this.state.modalShow}>
-                        <View style={styles.centeredView}>
-                            <View style={styles.modalView}>
-                                <Text style={styles.modalTitle}>{this.state.foodItem.food}</Text>
-                                <Text style={styles.modalText}>Below you will find more details about your food that was scanned using our app</Text>
-                                <TouchableRipple
-                                    style={[styles.button, styles.buttonClose]}
-                                    onPress={() => this.closeModal()}
-                                >
-                                    <Icon name="close" color="white" size={15}/>
-                                </TouchableRipple>
-                                <View style={styles.modalContent}>
-                                    <Text style={{color: '#777777', fontWeight: 'bold'}}>Date: <Text style={{fontWeight: 'normal'}}>{this.state.foodItem.date}</Text></Text>
-                                    <View style={styles.nutrientsTable}>
-                                        <Text style={{color: '#777777', fontWeight: 'bold'}}>Nutrients</Text>
-                                        <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
-                                            <Row data={this.state.tableHead} style={styles.head} textStyle={styles.text}/>
-                                            <Rows data={this.state.foodItem.nutrients} textStyle={styles.text}/>
-                                        </Table>
-                                    </View>
-                                    <Text style={{color: '#777777'}}>This dish goes well with {this.state.foodItem.recommendedDrink} and some {this.state.foodItem.recommendedFood} on the side.</Text>
-                                    <ScrollView style={{maxHeight: 255}}>
-                                        <Text style={{color: '#777777', fontWeight: 'bold'}}>Restaurants in your area that serve this food:</Text>
-                                        {this.state.restaurantsListView}
-                                    </ScrollView>
-                                </View>
-                            </View>
-                        </View>
-                    </Modal>
                     <View style={styles.title}>
                         <Text style={{fontWeight: 'bold', fontSize: 25}}>History</Text>
                     </View>
@@ -200,24 +116,6 @@ class HistoryScreen extends Component {
                 });
         });
     }
-
-    getDistanceFromLatLonInKm = (lat1,lon1,lat2,lon2) => {
-        let R = 6371; // Radius of the earth in km
-        let dLat = this.deg2rad(lat2-lat1);  // deg2rad below
-        let dLon = this.deg2rad(lon2-lon1);
-        let a =
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
-            Math.sin(dLon/2) * Math.sin(dLon/2)
-        ;
-        let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        let d = R * c; // Distance in km
-        return d;
-    };
-
-    deg2rad = (deg) => {
-        return deg * (Math.PI/180)
-    };
 }
 
 export default HistoryScreen;
