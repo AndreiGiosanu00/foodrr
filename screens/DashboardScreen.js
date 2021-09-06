@@ -232,7 +232,7 @@ class DashboardScreen extends Component {
                                 <Text style={{fontWeight: 'bold', color: '#777777'}}>Our recommendation:</Text>
                                 <Text style={{color: '#777777'}}>This dish goes well with White Wine and some Lemon on the side.</Text>
                                 <Text style={{color: '#777777', fontWeight: 'bold', marginTop: 5}}>Restaurants in your area that serve this food:</Text>
-                                <ScrollView style={{maxHeight: 130, marginTop: 5}}>
+                                <ScrollView style={{maxHeight: 250, marginTop: 5}}>
                                     <View style={{marginTop: 5, borderBottomColor: '#dddddd', borderBottomWidth: 1, padding: 5}}>
                                         <View style={{flexDirection: 'row'}}>
                                             <Image style={{width: 50, height: 50}} source={{uri: 'https://cdn3.vectorstock.com/i/1000x1000/12/02/restaurant-menu-icon-vector-4731202.jpg'}}/>
@@ -285,7 +285,7 @@ class DashboardScreen extends Component {
                                 <Text style={{fontWeight: 'bold', color: '#777777'}}>Our recommendation:</Text>
                                 <Text style={{color: '#777777'}}>This dish goes well with {this.state.foodItem.recommendedDrink} and some {this.state.foodItem.recommendedFood} on the side.</Text>
                                 <Text style={{color: '#777777', fontWeight: 'bold', marginTop: 5}}>Restaurants in your area that serve this food:</Text>
-                                <ScrollView style={{maxHeight: 130, marginTop: 5}}>
+                                <ScrollView style={{maxHeight: 250, marginTop: 5}}>
                                     {this.state.restaurantsListView}
                                 </ScrollView>
                             </View>
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     modalView: {
         margin: 10,
         width: width - 20,
-        height: height - 150,
+        height: height - 25,
         backgroundColor: "white",
         borderRadius: 20,
         paddingTop: 10,

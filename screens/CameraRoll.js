@@ -413,6 +413,7 @@ export default class CameraRoll extends React.Component {
         const output = day + '/' + month + '/' + year;
 
         let id = Date.now();
+        this.setState({loading: true});
         firebase.database().ref('/analyzed_food/' + id).set({
             image: this.state.image,
             food: this.state.detectedFood,
@@ -424,21 +425,20 @@ export default class CameraRoll extends React.Component {
             user: this.state.currentUser.uid,
             id: id
         }).then(snapshot => {
-            // console.log('Snapshot', snapshot);
-        });
-        // add to history
-        firebase.database().ref('/history/' + id).set({
-            image: this.state.image,
-            food: this.state.detectedFood,
-            nutrients: this.state.tableData,
-            restaurantsList: restaurantsInYourArea,
-            recommendedDrink: this.state.recommendedDrink,
-            recommendedFood: this.state.recommendedFood,
-            date: output,
-            user: this.state.currentUser.uid,
-            id: id
-        }).then(snapshot => {
-            // console.log('Snapshot', snapshot);
+            // add to history
+            firebase.database().ref('/history/' + id).set({
+                image: this.state.image,
+                food: this.state.detectedFood,
+                nutrients: this.state.tableData,
+                restaurantsList: restaurantsInYourArea,
+                recommendedDrink: this.state.recommendedDrink,
+                recommendedFood: this.state.recommendedFood,
+                date: output,
+                user: this.state.currentUser.uid,
+                id: id
+            }).then(snapshot => {
+                this.setState({loading: false});
+            });
         });
     };
 

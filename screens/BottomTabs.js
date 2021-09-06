@@ -30,7 +30,7 @@ class BottomTabs extends Component {
                     }}
                     listeners={{
                         tabPress: e => {
-                            this.setState({reload: false});
+                            this.setState({loading: true});
                         },
                     }}
                 />
@@ -45,7 +45,7 @@ class BottomTabs extends Component {
                     }}
                     listeners={{
                         tabPress: e => {
-                            this.setState({reload: false});
+                            this.setState({loading: true});
                         },
                     }}
                 />
@@ -60,7 +60,7 @@ class BottomTabs extends Component {
                     }}
                     listeners={{
                         tabPress: e => {
-                            this.setState({reload: false});
+                            this.setState({loading: true});
                         },
                     }}
                     style={{display: 'none'}}
@@ -76,7 +76,7 @@ class BottomTabs extends Component {
                     }}
                     listeners={{
                         tabPress: e => {
-                            this.setState({reload: false});
+                            this.setState({loading: true});
                         },
                     }}
                 />

@@ -34,7 +34,8 @@ class FavoritesScreen extends Component {
                 ]
             },
             tableHead: ['Nutrient', 'Quantity', 'Unit'],
-            noFavorites: true
+            noFavorites: true,
+            loading: false
         }
     }
 
