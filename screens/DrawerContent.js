@@ -64,12 +64,12 @@ export function DrawerContent(props) {
             } else {
                 state = {
                     loading: false, profileModalShow: false, displayUser: {
-                        name: state.currentUser.displayName,
+                        name: 'Andrei Giosanu',
                         location: 'Bucharest, Romania',
                         phone: '+40 753 844 087',
-                        email: state.currentUser.email,
+                        email: 'andreigiosanu0@gmail.com',
                         username: createUsername(),
-                        totalCaloriesPerDay: state.totalCaloriesPerDay
+                        totalCaloriesPerDay: 0
                     }
                 };
             }

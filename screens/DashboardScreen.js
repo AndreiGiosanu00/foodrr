@@ -209,9 +209,13 @@ class DashboardScreen extends Component {
                             }
                         }
                     });
-                    this.setState({dashboardContent: dashboardContent, totalCaloriesPerDay: totalCalories});
+                    if ( this.state.analyzedFood.length > 0) {
+                        this.setState({dashboardContent: dashboardContent, totalCaloriesPerDay: totalCalories});
+                    } else {
+                        this.setState({noHistory: true});
+                    }
                 } else {
-                    this.state.noHistory = true;
+                    this.setState({noHistory: true});
                 }
             });
 
