@@ -425,6 +425,7 @@ class DashboardScreen extends Component {
                                 <Icon name="close" color="white" size={15}/>
                             </TouchableRipple>
                             <View style={styles.modalContent}>
+                                <Text style={{color: '#777777'}}>Date: {this.state.foodItem.date}</Text>
                                 <View style={styles.nutrientsTable}>
                                     <Text style={{color: '#777777', fontWeight: 'bold', textAlign: 'center', marginBottom: 5}}>Nutrients</Text>
                                     <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
