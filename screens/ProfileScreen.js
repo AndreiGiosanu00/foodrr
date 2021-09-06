@@ -57,7 +57,6 @@ class ProfileScreen extends Component {
                             }
                         }
                     });
-                    console.log('da: ' + totalCalories);
                     this.setState({loading: false, profileModalShow: false, displayUser: {
                             name: this.state.currentUser.displayName,
                             location: 'Bucharest, Romania',

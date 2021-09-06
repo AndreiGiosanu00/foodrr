@@ -21,7 +21,67 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import firebase from "firebase";
 
 export function DrawerContent(props) {
+    let state = {
+        totalCaloriesPerDay: 0,
+        totalScans: 0,
+        loading: false,
+        currentUser: firebase.auth().currentUser,
+        displayUser: {
+            name: '',
+            location: '',
+            phone: '',
+            email: '',
+            photo: '',
+            username: ''
+        },
+    };
+
+    firebase.database().ref('/analyzed_food/')
+        .on('value', snapshot => {
+            if (snapshot.val() !== null) {
+                state.analyzedFood = Object.values(snapshot.val());
+                state.analyzedFood.forEach(foodItem => {
+                    if (foodItem.user === firebase.auth().currentUser.uid) {
+                        state.totalScans++;
+                        if (foodItem.date === '06/8/2021') {
+                            state.totalCaloriesPerDay += (+foodItem.nutrients[1][1]);
+                        }
+                    }
+                });
+                state = {
+                    loading: false, profileModalShow: false, displayUser: {
+                        name: state.currentUser.displayName,
+                        location: 'Bucharest, Romania',
+                        phone: '+40 753 844 087',
+                        email: state.currentUser.email,
+                        username: createUsername(),
+                        totalCaloriesPerDay: state.totalCaloriesPerDay
+                    }
+                };
+                let primaryView = [
+
+                ];
+            } else {
+                state = {
+                    loading: false, profileModalShow: false, displayUser: {
+                        name: state.currentUser.displayName,
+                        location: 'Bucharest, Romania',
+                        phone: '+40 753 844 087',
+                        email: state.currentUser.email,
+                        username: createUsername(),
+                        totalCaloriesPerDay: state.totalCaloriesPerDay
+                    }
+                };
+            }
+        });
+
     const paperTheme = useTheme();
+
+    function createUsername() {
+        let names = state.currentUser.displayName.split(' ');
+        let username = names[0][0].toLowerCase() + names[1].toLowerCase();
+        return username;
+    }
 
     return(
         <View style={{flex:1}}>
@@ -34,14 +94,14 @@ export function DrawerContent(props) {
                                 size={50}
                             />
                             <View style={{marginLeft:15, flexDirection:'column'}}>
-                                <Title style={styles.title}>Andrei Giosanu</Title>
-                                <Caption style={styles.caption}>@agiosanu</Caption>
+                                <Title style={styles.title}>{state.displayUser.name}</Title>
+                                <Caption style={styles.caption}>@{state.displayUser.username}</Caption>
                             </View>
                         </View>
 
                         <View style={styles.row}>
                             <Paragraph style={[styles.paragraph, styles.caption]}>Today: </Paragraph>
-                            <Caption style={styles.caption}>450 Kcal</Caption>
+                            <Caption style={styles.caption}>5481.22 Kcal</Caption>
                         </View>
                         <View style={styles.row}>
                             <Paragraph style={[styles.paragraph, styles.caption]}>Average: </Paragraph>
