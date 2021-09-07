@@ -160,21 +160,23 @@ export default class CameraRoll extends React.Component {
       if (this.state.nutrientsResponse) {
           this.state.restaurantsListView = [];
           this.restaurantsInYourArea.forEach(restaurant => {
-              this.state.restaurantsListView.push(
-                  <View style={{marginTop: 5, borderBottomColor: '#dddddd', borderBottomWidth: 1, padding: 5}}>
-                      <View style={{flexDirection: 'row'}}>
-                          <Image style={{width: 50, height: 50}} source={{uri: 'https://cdn3.vectorstock.com/i/1000x1000/12/02/restaurant-menu-icon-vector-4731202.jpg'}}/>
-                          <Text style={{fontWeight: 'bold', fontSize: 18, marginTop: 10, marginLeft: 15, color: '#777777'}}>{restaurant.name}</Text>
-                          <TouchableRipple style={{backgroundColor: '#4285F4', color: 'white', paddingBottom: 5,
-                              paddingTop: 5, alignItems: 'center', borderRadius: 50, width: 120, height: 35, marginTop: 5,
-                              marginLeft: 30}} onPress={() => Linking.openURL('google.navigation:q=' + restaurant.vicinity)}>
-                              <Text style={{color: 'white', fontWeight: 'bold'}}>Navigate <Icon name="google-maps" color="white" size={20}/></Text>
-                          </TouchableRipple>
+              if (restaurant.name !== 'Leon Gourmet Bakery-Botosani') {
+                  this.state.restaurantsListView.push(
+                      <View style={{marginTop: 5, borderBottomColor: '#dddddd', borderBottomWidth: 1, padding: 5}}>
+                          <View style={{flexDirection: 'row'}}>
+                              <Image style={{width: 50, height: 50}} source={{uri: 'https://cdn3.vectorstock.com/i/1000x1000/12/02/restaurant-menu-icon-vector-4731202.jpg'}}/>
+                              <Text style={{fontWeight: 'bold', fontSize: 18, marginTop: 10, marginLeft: 15, color: '#777777'}}>{restaurant.name}</Text>
+                              <TouchableRipple style={{backgroundColor: '#4285F4', color: 'white', paddingBottom: 5,
+                                  paddingTop: 5, alignItems: 'center', borderRadius: 50, width: 120, height: 35, marginTop: 5,
+                                  marginLeft: 30}} onPress={() => Linking.openURL('google.navigation:q=' + restaurant.vicinity)}>
+                                  <Text style={{color: 'white', fontWeight: 'bold'}}>Navigate <Icon name="google-maps" color="white" size={20}/></Text>
+                              </TouchableRipple>
+                          </View>
+                          <Text style={{color: '#777777'}}><Text style={{fontWeight: 'bold'}}>Location:</Text> {restaurant.vicinity}</Text>
+                          <Text style={{fontWeight: 'bold', color: '#777777'}}>{this.getDistanceFromLatLonInKm(this.latitude, this.longitude, restaurant.location.lat, restaurant.location.lng).toFixed(2)} km from your current location</Text>
                       </View>
-                      <Text style={{color: '#777777'}}><Text style={{fontWeight: 'bold'}}>Location:</Text> {restaurant.vicinity}</Text>
-                      <Text style={{fontWeight: 'bold', color: '#777777'}}>{this.getDistanceFromLatLonInKm(this.latitude, this.longitude, restaurant.location.lat, restaurant.location.lng).toFixed(2)} km from your current location</Text>
-                  </View>
-              );
+                  );
+              }
           });
 
           if (this.state.restaurantsListView.length > 0) {
@@ -330,13 +332,13 @@ export default class CameraRoll extends React.Component {
                 }
             );
             let responseJson = await response.json();
-            console.log(responseJson.responses);
+            console.log(responseJson.responses + 'a');
             let analyzerResponses = [];
             let errorResponses = ['Food', 'Bun', 'Ingredient', 'Staple food', 'Recipe', 'Fast food', 'Baked goods',
                 'Cuisine', 'Tableware', 'Sandwich', 'Plate', 'Dishware', 'Dish', 'Produce', 'European cuisine',
                 'Flammekueche', 'Vegetarian cuisine', 'Dish Network', 'Mitsui cuisine M', 'Jamaican cuisine',
                 'Meal', 'Salad', 'Meal preparation', 'Dinner', 'Lunch', 'Restaurant', 'Healthy diet', 'Low-carbohydrate diet',
-                'Ketogenic diet'];
+                'Ketogenic diet', 'Lo mein'];
 
             // filter the analyzer response
             if (responseJson.responses && responseJson.responses[0] && responseJson.responses[0].webDetection ) {
@@ -348,7 +350,7 @@ export default class CameraRoll extends React.Component {
                 });
             }
 
-            let detectedFood = analyzerResponses[0] ? analyzerResponses[0].description : 'Hamburger';
+            let detectedFood = analyzerResponses[0] ? analyzerResponses[0].description : 'Pasta carbonara';
 
             // Get nutrients details
             let nutrientsResponse = await fetch(
@@ -422,7 +424,7 @@ export default class CameraRoll extends React.Component {
             recommendedDrink: this.state.recommendedDrink,
             recommendedFood: this.state.recommendedFood,
             date: output,
-            user: this.state.currentUser.uid,
+            user: firebase.auth().currentUser.uid,
             id: id
         }).then(snapshot => {
             // add to history
@@ -434,7 +436,7 @@ export default class CameraRoll extends React.Component {
                 recommendedDrink: this.state.recommendedDrink,
                 recommendedFood: this.state.recommendedFood,
                 date: output,
-                user: this.state.currentUser.uid,
+                user: firebase.auth().currentUser.uid,
                 id: id
             }).then(snapshot => {
                 this.setState({loading: false});
@@ -458,7 +460,7 @@ export default class CameraRoll extends React.Component {
             recommendedDrink: this.state.recommendedDrink,
             recommendedFood: this.state.recommendedFood,
             date: output,
-            user: this.state.currentUser.uid,
+            user: firebase.auth().currentUser.uid,
             id: id
         }).then(snapshot => {
             // console.log('Snapshot', snapshot);

@@ -12,6 +12,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {ScrollView} from "react-native-gesture-handler";
 import {Row, Rows, Table} from "react-native-table-component";
 import firebase from "firebase";
+import * as Location from "expo-location";
 
 const {width, height} = Dimensions.get('window');
 
@@ -42,7 +43,7 @@ class FavoritesScreen extends Component {
         }
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         firebase.database().ref('/favorites/')
             .on('value', snapshot => {
                 if (snapshot.val() !== null) {
@@ -53,6 +54,9 @@ class FavoritesScreen extends Component {
                     this.setState({noFavorites: true, loading: false});
                 }
             });
+        let location = await Location.getCurrentPositionAsync({});
+        this.latitude = location.coords.latitude;
+        this.longitude = location.coords.longitude;
     }
 
     deleteItemFromFavorites(id) {
@@ -112,6 +116,24 @@ class FavoritesScreen extends Component {
         this.setState({modalShow: false});
     }
 
+    getDistanceFromLatLonInKm = (lat1,lon1,lat2,lon2) => {
+        let R = 6371; // Radius of the earth in km
+        let dLat = this.deg2rad(lat2-lat1);  // deg2rad below
+        let dLon = this.deg2rad(lon2-lon1);
+        let a =
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+            Math.sin(dLon/2) * Math.sin(dLon/2)
+        ;
+        let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        let d = R * c; // Distance in km
+        return d;
+    };
+
+    deg2rad = (deg) => {
+        return deg * (Math.PI/180)
+    };
+
     render() {
         if (this.state.noFavorites) {
             return (
@@ -125,7 +147,7 @@ class FavoritesScreen extends Component {
         } else {
             this.state.favoritesView = [];
             this.state.favoritesFood.forEach(foodItem => {
-                if (foodItem.user === this.state.currentUser.uid) {
+                if (foodItem.user === firebase.auth().currentUser.uid) {
                     this.state.favoritesView.push(
                         <View style={styles.foodItem}>
                             <Image style={styles.foodImage} source={{uri: foodItem.image}}/>
@@ -250,7 +272,7 @@ const styles = StyleSheet.create({
     modalView: {
         margin: 10,
         width: width - 20,
-        height: height - 150,
+        height: height - 20,
         backgroundColor: "white",
         borderRadius: 20,
         paddingTop: 10,

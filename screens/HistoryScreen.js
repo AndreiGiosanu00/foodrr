@@ -10,6 +10,7 @@ import {ScrollView} from "react-native-gesture-handler";
 import firebase from "firebase";
 import {Row, Rows, Table} from "react-native-table-component";
 import DashboardScreen from "./DashboardScreen";
+import * as Location from "expo-location";
 
 const {width, height} = Dimensions.get('window');
 
@@ -36,7 +37,7 @@ class HistoryScreen extends Component {
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         firebase.database().ref('/history/')
             .on('value', snapshot => {
                 if (snapshot.val() !== null) {
@@ -47,6 +48,9 @@ class HistoryScreen extends Component {
                     this.setState({loading: false});
                 }
             });
+        let location = await Location.getCurrentPositionAsync({});
+        this.latitude = location.coords.latitude;
+        this.longitude = location.coords.longitude;
     }
 
     openModal(foodItem) {
@@ -120,7 +124,7 @@ class HistoryScreen extends Component {
         } else {
             let foodItemsView = [];
             this.state.foodsScanned.forEach(foodItem => {
-                if (foodItem.user === this.state.currentUser.uid) {
+                if (foodItem.user === firebase.auth().currentUser.uid) {
                     foodItemsView.push(
                         <View style={styles.foodItem}>
                             <Image style={styles.foodImage} source={{uri: foodItem.image}}/>

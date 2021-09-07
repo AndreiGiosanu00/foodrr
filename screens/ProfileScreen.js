@@ -44,15 +44,17 @@ class ProfileScreen extends Component {
     }
 
     componentDidMount() {
+        console.log('da')
         firebase.database().ref('/analyzed_food/')
             .on('value', snapshot => {
                 if (snapshot.val() !== null) {
                     this.state.analyzedFood = Object.values(snapshot.val());
                     let totalCalories = 0;
+                    this.state.totalCaloriesPerDay = this.state.totalScans = 0;
                     this.state.analyzedFood.forEach(foodItem => {
-                        if (foodItem.user === this.state.currentUser.uid) {
+                        if (foodItem.user === firebase.auth().currentUser.uid) {
                             this.state.totalScans++;
-                            if (foodItem.date === '06/8/2021') {
+                            if (foodItem.date === '07/8/2021') {
                                 this.state.totalCaloriesPerDay += (+foodItem.nutrients[1][1]);
                             }
                         }
@@ -244,7 +246,7 @@ class ProfileScreen extends Component {
                         borderRightWidth: 1
                     }]}>
                         <TouchableRipple onPress={() => {this.changeChartModalState(true)}}>
-                            <Title>{this.state.totalCaloriesPerDay} kcal</Title>
+                            <Title>{this.state.totalCaloriesPerDay.toFixed(2)} kcal</Title>
                         </TouchableRipple>
                         <Caption>Today's kcal</Caption>
                     </View>

@@ -36,7 +36,7 @@ export function DrawerContent(props) {
         },
     };
 
-    firebase.database().ref('/analyzed_food/')
+    /*firebase.database().ref('/analyzed_food/')
         .on('value', snapshot => {
             if (snapshot.val() !== null) {
                 state.analyzedFood = Object.values(snapshot.val());
@@ -73,15 +73,15 @@ export function DrawerContent(props) {
                     }
                 };
             }
-        });
+        });*/
 
     const paperTheme = useTheme();
 
-    function createUsername() {
-        let names = state.currentUser.displayName.split(' ');
-        let username = names[0][0].toLowerCase() + names[1].toLowerCase();
-        return username;
-    }
+    // function createUsername() {
+    //     let names = state.currentUser.displayName.split(' ');
+    //     let username = names[0][0].toLowerCase() + names[1].toLowerCase();
+    //     return username;
+    // }
 
     return(
         <View style={{flex:1}}>
@@ -94,18 +94,18 @@ export function DrawerContent(props) {
                                 size={50}
                             />
                             <View style={{marginLeft:15, flexDirection:'column'}}>
-                                <Title style={styles.title}>{state.displayUser.name}</Title>
-                                <Caption style={styles.caption}>@{state.displayUser.username}</Caption>
+                                <Title style={styles.title}>Andrei Giosanu</Title>
+                                <Caption style={styles.caption}>@agiosanu</Caption>
                             </View>
                         </View>
 
                         <View style={styles.row}>
                             <Paragraph style={[styles.paragraph, styles.caption]}>Today: </Paragraph>
-                            <Caption style={styles.caption}>5481.22 Kcal</Caption>
+                            <Caption style={styles.caption}>8011.59 Kcal</Caption>
                         </View>
                         <View style={styles.row}>
                             <Paragraph style={[styles.paragraph, styles.caption]}>Average: </Paragraph>
-                            <Caption style={styles.caption}>1960 Kcal</Caption>
+                            <Caption style={styles.caption}>2112.40 Kcal</Caption>
                         </View>
                     </View>
 

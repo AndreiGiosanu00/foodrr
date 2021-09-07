@@ -179,7 +179,7 @@ class DashboardScreen extends Component {
                     let dashboardContent = [];
                     let totalCalories = 0;
                     this.state.analyzedFood.forEach(foodItem => {
-                        if (foodItem.user === this.state.currentUser.uid) {
+                        if (foodItem.user === firebase.auth().currentUser.uid) {
                             dashboardContent.push(
                                 <View style={styles.foodItem}>
                                     <Image style={styles.foodImage} source={{uri: foodItem.image}}/>
@@ -209,7 +209,7 @@ class DashboardScreen extends Component {
                             }
                         }
                     });
-                    if ( this.state.analyzedFood.length > 0) {
+                    if ( this.state.analyzedFood.length > 0 && dashboardContent.length > 0) {
                         this.setState({dashboardContent: dashboardContent, totalCaloriesPerDay: totalCalories});
                     } else {
                         this.setState({noHistory: true});
@@ -456,12 +456,12 @@ class DashboardScreen extends Component {
                 </View>
                 <ScrollView style={styles.foodsContainer}>
                     <View style={styles.foodsDateContainer}>
-                        <Text style={{fontSize: 15, color: '#777777', fontWeight: 'bold', marginLeft: 5}}>Scans from 06/09/2021</Text>
+                        <Text style={{fontSize: 15, color: '#777777', fontWeight: 'bold', marginLeft: 5}}>Scans from 07/09/2021</Text>
                         {this.state.dashboardContent}
                     </View>
-                    {(this.state.currentUser.uid === "8W8XUDl06DNCFQ5qJDHjPkqpFwd2") ?
+                    {(firebase.auth().currentUser.uid === "08EG3z1kZTXNSXHA3X8PlX3lPL02") ?
                         <View style={styles.foodsDateContainer}>
-                            <Text style={{fontSize: 15, color: '#777777', fontWeight: 'bold', marginLeft: 5}}>Scans from 05/09/2021</Text>
+                            <Text style={{fontSize: 15, color: '#777777', fontWeight: 'bold', marginLeft: 5}}>Scans from 03/09/2021</Text>
                             <View style={styles.foodItem}>
                                 <Image style={styles.foodImage} source={{uri: 'https://s3.amazonaws.com/cms.ipressroom.com/67/files/20125/4ffe088229371a067f00000f_Milk_in_glass_verticle_from_above/Milk_in_glass_verticle_from_above_225d0276-39e4-4370-bb12-580776bf9b96-prv.jpg'}}/>
                                 <View style={{marginLeft: 15}}>
@@ -473,7 +473,7 @@ class DashboardScreen extends Component {
 
                                     <View style={{flexDirection: 'row', marginTop: 10}}>
                                         <Icon name="calendar" color="#4285F4" size={25} style={{marginRight: 10, marginLeft: 50}}/>
-                                        <Text style={{color: '#777777', fontSize: 15}}>05/09/2021</Text>
+                                        <Text style={{color: '#777777', fontSize: 15}}>03/09/2021</Text>
                                     </View>
                                     <TouchableRipple onPress={() => {}} style={{padding: 5, marginTop: 5, marginLeft: 45}}>
                                         <View style={{flexDirection: 'row'}}>

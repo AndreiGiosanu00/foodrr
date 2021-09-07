@@ -211,6 +211,7 @@ class LoginScreen extends Component {
 
             if (result.type === 'success') {
                 this.onSignIn(result);
+                this.setState({currentUser: firebase.auth().currentUser})
                 return result.accessToken;
             } else {
                 return { cancelled: true };
